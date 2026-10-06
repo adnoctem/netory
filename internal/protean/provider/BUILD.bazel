@@ -1,0 +1,41 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "provider",
+    srcs = [
+        "cloudflare.go",
+        "libdns.go",
+        "provider.go",
+        "registry.go",
+        "route53.go",
+        "spaceship.go",
+    ],
+    importpath = "github.com/adnoctem/netory/internal/protean/provider",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "@com_github_libdns_cloudflare//:cloudflare",
+        "@com_github_libdns_libdns//:libdns",
+        "@com_github_libdns_route53//:route53",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":provider",
+    visibility = ["//:__subpackages__"],
+)
+
+go_test(
+    name = "provider_test",
+    srcs = [
+        "export_test.go",
+        "libdns_test.go",
+        "provider_test.go",
+    ],
+    embed = [":provider"],
+    deps = [
+        "@com_github_libdns_libdns//:libdns",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+    ],
+)

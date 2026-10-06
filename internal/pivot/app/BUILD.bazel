@@ -1,0 +1,61 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "app",
+    srcs = [
+        "audit.go",
+        "caches.go",
+        "client.go",
+        "event.go",
+        "notifier.go",
+        "ratelimit.go",
+        "ruleset.go",
+        "settings.go",
+        "state.go",
+        "token.go",
+        "tokencache.go",
+    ],
+    importpath = "github.com/adnoctem/netory/internal/pivot/app",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//internal/pivot/auth",
+        "//internal/pivot/cache",
+        "//internal/pivot/config",
+        "//internal/pivot/rules",
+        "//pkg/event",
+        "//pkg/kv",
+        "//pkg/kv/valkeykv",
+        "//pkg/log",
+        "//pkg/notify",
+        "//pkg/seal",
+        "//pkg/secret",
+        "//pkg/stamp",
+        "@com_github_valkey_io_valkey_go//:valkey-go",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":app",
+    visibility = ["//:__subpackages__"],
+)
+
+go_test(
+    name = "app_test",
+    srcs = [
+        "app_test.go",
+        "ratelimit_test.go",
+        "reload_test.go",
+    ],
+    deps = [
+        ":app",
+        "//internal/pivot/auth",
+        "//internal/pivot/config",
+        "//internal/pivot/rules",
+        "//pkg/kv/valkeykv",
+        "//pkg/log",
+        "//pkg/secret",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+    ],
+)

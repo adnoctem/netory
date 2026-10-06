@@ -1,0 +1,63 @@
+name: "Run Super-Linter"
+
+on:
+  push:
+    branches: [main, next]
+  pull_request:
+    branches: [main, next]
+  workflow_dispatch: {}
+
+permissions: {}
+
+concurrency:
+  group: "${{ github.workflow }}@${{ github.event.pull_request.head.label || github.head_ref || github.ref }}"
+  # Safe to cancel: nothing here signs or publishes anything, so a superseded
+  # run can be dropped without leaving state behind.
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Super-Lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      issues: write
+      pull-requests: write
+      statuses: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Superlinter
+        uses: super-linter/super-linter@4ce20838b8ab83717e78138c5b3a1407148e0918 # v8.7.0
+        env:
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Bazel/Starlark files (MODULE.bazel, BUILD.bazel, *.bzl, the lockfile) have no
+          # dedicated validator here and get misdetected as Python by several linters below,
+          # so they're excluded outright rather than disabling those linters repo-wide.
+          # CHANGELOG.md is semantic-release-generated (excluded from our own markdownlint/typos
+          # pre-commit hooks for the same reason - its per-version headings legitimately repeat).
+          FILTER_REGEX_EXCLUDE: (.*.mod|.*.sum|.*.lock|.*.?bazel.*|.*CHANGELOG.md$)
+          BASH_EXEC_IGNORE_LIBRARIES: true
+          # Trivy's own CLI flags can be set as env vars (TRIVY_<FLAG_NAME>). Per-vulnerability
+          # ignores (with justification) live in the referenced file rather than a blanket
+          # ignore-unfixed, so each skip is documented and reviewed individually.
+          TRIVY_IGNOREFILE: .github/linters/.trivyignore.yaml
+          # mostly false positives
+          VALIDATE_SPELL_CODESPELL: false
+          VALIDATE_NATURAL_LANGUAGE: false
+          VALIDATE_JSCPD: false
+          VALIDATE_KUBERNETES_KUBECONFORM: false
+          # Prettier is authoritative
+          VALIDATE_BIOME_FORMAT: false
+          VALIDATE_BIOME_LINT: false
+          # golangci-lint runs in testing.yaml against the whole module, which
+          # is the configuration that matters; super-linter's per-file Go run
+          # does not see the module and reports import errors instead.
+          VALIDATE_GO: false
+          VALIDATE_GO_MODULES: false

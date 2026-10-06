@@ -1,0 +1,51 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "bundle",
+    srcs = [
+        "extract.go",
+        "manifest.go",
+        "minisign.go",
+        "mode.go",
+        "parse.go",
+        "schema.go",
+        "truncation.go",
+        "truncation_ps1.go",
+    ],
+    importpath = "github.com/adnoctem/netory/internal/signpost/bundle",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//pkg/schema",
+        "@in_gopkg_yaml_v3//:yaml_v3",
+        "@org_golang_x_crypto//blake2b",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":bundle",
+    visibility = ["//:__subpackages__"],
+)
+
+go_test(
+    name = "bundle_test",
+    srcs = [
+        "extract_test.go",
+        "manifest_test.go",
+        "minisign_test.go",
+        "pattern_test.go",
+        "schema_test.go",
+        "truncation_test.go",
+    ],
+    # keep: the committed schema is read by schema_test.go through its
+    # repo-relative path, which resolves inside the runfiles tree only if the
+    # file is a data dependency. Gazelle would otherwise reduce this to the
+    # testdata glob it can see.
+    data = glob(["testdata/**"]) + ["//docs/schema:signpost-manifest-v1.json"],  # keep
+    deps = [
+        ":bundle",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+        "@org_golang_x_crypto//blake2b",
+    ],
+)

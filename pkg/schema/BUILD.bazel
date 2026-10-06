@@ -1,0 +1,24 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "schema",
+    srcs = ["schema.go"],
+    importpath = "github.com/adnoctem/netory/pkg/schema",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":schema",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "schema_test",
+    srcs = ["schema_test.go"],
+    deps = [
+        ":schema",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+    ],
+)

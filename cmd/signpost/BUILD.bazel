@@ -1,0 +1,40 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("//scripts/bazel:image.bzl", "netory_image")
+
+go_library(
+    name = "signpost_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/adnoctem/netory/cmd/signpost",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//internal/signpost/cmd",
+        "//pkg/admin",
+        "//pkg/stamp",
+    ],
+)
+
+go_binary(
+    name = "signpost",
+    embed = [":signpost_lib"],
+
+    # Static, so the binary runs in an image carrying no libc. The release
+    # configuration sets this globally; stating it here means the image is
+    # static whichever configuration built it.
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
+
+netory_image(
+    binary = ":signpost",
+    description = "Public script router for the one-line install pattern, serving immutable releases over HTTPS",
+    exposed_ports = [
+        "8443/tcp",
+    ],
+    service = "signpost",
+    state_dirs = [
+        "/var/lib/signpost/db",
+        "/var/lib/signpost/content",
+        "/run/signpost",
+    ],
+    visibility = ["//visibility:public"],
+)

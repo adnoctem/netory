@@ -1,0 +1,50 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests",
+    ":enablePreCommit"
+  ],
+  "assignees": ["MVProwess"],
+  "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths"],
+  "packageRules": [
+    {
+      "matchManagers": ["bazel-module"],
+      "matchPackageNames": ["rules_go", "gazelle"],
+      "groupName": "bazel go rules",
+      "minimumReleaseAge": "3 days",
+      "description": "rules_go and gazelle are version-coupled and were verified together against the pinned Bazel LTS (see docs/design/protean.md section 10). Bumping one without the other is how that verification silently stops holding, so they land as one reviewable PR."
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchPackageNames": ["github.com/dgraph-io/badger/v4"],
+      "minimumReleaseAge": "7 days",
+      "addLabels": ["needs-kv-conformance-check"],
+      "description": "Badger is the store behind protean and signpost, and pkg/kv/badgerkv depends on behaviour its API does not document - notably that Entry.WithTTL truncates expiry to whole seconds. pkg/kv/kvtest is what catches a change there, so a bump needs that suite looked at rather than just a green tick."
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchPackageNames": ["golang.org/x/**"],
+      "groupName": "golang.org/x packages"
+    },
+    {
+      "matchManagers": ["bazel-module"],
+      "matchPackageNames": ["rules_oci", "aspect_bazel_lib", "tar.bzl"],
+      "groupName": "bazel container rules",
+      "minimumReleaseAge": "3 days",
+      "description": "The container rules work together and were verified as a set against the pinned Bazel LTS. Bumping one without the others is how that verification silently stops holding, so they land as one reviewable PR."
+    },
+    {
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["gcr.io/distroless/static-debian12"],
+      "groupName": "distroless base image",
+      "description": "The base image is pinned by digest in MODULE.bazel, which is what makes the image build reproducible - a tag is a moving reference. Renovate keeps the digest current; the image carries the CA bundle all three services need for outbound TLS, so a bump is worth a sanity check that it still does."
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchUpdateTypes": ["major"],
+      "addLabels": ["breaking-change"],
+      "description": "Major Go module bumps (an import-path-changing rename, or a breaking API redesign) need a manual look before merge, not just a passing build."
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+# .gitignore - netory
+
+###> general/editors ###
+
+# IntelliJ IDEA
+.idea/*
+
+# VS Code
+.vscode/*
+###>
+
+###> general/secret ###
+
+# A service secret must never reach the index. PROTEAN_SECRET, SIGNPOST_SECRET
+# and PIVOT_SECRET are delivered by environment variable, file or container
+# secret - see pkg/secret - and a local one belongs here.
+secrets/*
+*.secret
+.env
+.env.*
+!.env.example
+###>
+
+###> source/sources ###
+
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+###>
+
+###> source/tests ###
+
+# Tests
+*.test
+
+# Go coverage tool output
+*.out
+###>
+
+###> source/state ###
+
+# Local Badger databases. protean and signpost open one per server process;
+# it holds encrypted credentials and must not be committed.
+data/*
+!data/.gitkeep
+###>
+
+###> source/temp ###
+
+# Bazel output
+bazel-*
+
+# distribution
+dist/*
+build/*
+###>

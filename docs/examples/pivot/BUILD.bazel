@@ -1,0 +1,15 @@
+# The example rule documents are what the documentation tells an operator to
+# copy, and the rules package's tests compile every one of them, so they have
+# to be visible to those tests as Bazel data dependencies rather than only as
+# files on disk.
+#
+# A filegroup rather than one label per file: the test walks the directory, so
+# a new example is covered by writing it, and the Bazel side should not need an
+# edit either.
+filegroup(
+    name = "examples",
+    srcs = glob(["*.yaml"]),
+    visibility = ["//:__subpackages__"],
+)
+
+exports_files(glob(["*.yaml"]))

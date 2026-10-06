@@ -1,0 +1,3 @@
+# This package holds Bazel macros rather than code. The image macro is loaded
+# by each service's cmd/<service>/BUILD.bazel.
+exports_files(["image.bzl"])

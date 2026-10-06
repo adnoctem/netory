@@ -1,0 +1,39 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "notify",
+    srcs = [
+        "message.go",
+        "notify.go",
+        "smtp.go",
+        "webhook.go",
+    ],
+    importpath = "github.com/adnoctem/netory/pkg/notify",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/event",
+        "//pkg/secret",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":notify",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "notify_test",
+    srcs = [
+        "export_test.go",
+        "notify_test.go",
+        "smtp_test.go",
+    ],
+    embed = [":notify"],
+    deps = [
+        "//pkg/event",
+        "//pkg/secret",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+    ],
+)

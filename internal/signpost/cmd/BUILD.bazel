@@ -1,0 +1,37 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "cmd",
+    srcs = [
+        "alias.go",
+        "bundle.go",
+        "cmd.go",
+        "config.go",
+        "notifier.go",
+        "outbox.go",
+        "output.go",
+        "secret.go",
+        "serve.go",
+        "version.go",
+    ],
+    importpath = "github.com/adnoctem/netory/internal/signpost/cmd",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//internal/signpost/app",
+        "//internal/signpost/bundle",
+        "//internal/signpost/config",
+        "//internal/signpost/server",
+        "//pkg/admin",
+        "//pkg/log",
+        "//pkg/notify",
+        "//pkg/secret",
+        "//pkg/stamp",
+        "@com_github_spf13_cobra//:cobra",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":cmd",
+    visibility = ["//:__subpackages__"],
+)

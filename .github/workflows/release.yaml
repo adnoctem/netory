@@ -1,0 +1,255 @@
+name: Release
+
+# Releasing is a manual, gated act, which is the convention the sibling
+# repositories follow: `NETORY_RELEASE_ENABLED` has to be set to `true` in the
+# repository's Actions variables, and somebody has to dispatch this workflow.
+# Testing can hand it the commit it tested, and the gate below refuses a branch
+# that has moved on since.
+#
+# Three services, one monorepo, one version. A release publishes the tarballs
+# and checksums as GitHub release assets and the three container images to
+# GHCR, all stamped with the same version.
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Optional tested commit; must still be the selected branch head
+        required: false
+        type: string
+      bootstrap:
+        description: Publish the first 0.1.0 release from main (requires no existing version tags)
+        required: false
+        default: false
+        type: boolean
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: netory-release
+  # Never cancelled. A half-cancelled release is a tag with no assets, or
+  # images pushed under a version that has no GitHub release.
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Prepare and publish the release
+    if: ${{ vars.NETORY_RELEASE_ENABLED == 'true' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/next') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the tag, the release and the changelog commit
+      issues: write # semantic-release comments on a failed release
+      pull-requests: write
+    outputs:
+      published: ${{ steps.result.outputs.published }}
+      version: ${{ steps.result.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+          # The release script stamps artifacts with the version, and
+          # semantic-release needs the history and tags to decide what that
+          # version is. Without this every release would start over from zero.
+          fetch-depth: 0
+
+      - name: Check release inputs
+        env:
+          TESTED_SHA: ${{ inputs.sha }}
+          BOOTSTRAP_RELEASE: ${{ inputs.bootstrap }}
+        run: |
+          if [[ -n "${TESTED_SHA}" && "${TESTED_SHA}" != "$(git rev-parse HEAD)" ]]; then
+            echo "::error::The branch has advanced since testing. Run Testing again before releasing." >&2
+            exit 1
+          fi
+
+          if [[ "${BOOTSTRAP_RELEASE}" == "true" ]]; then
+            if [[ "${GITHUB_REF}" != "refs/heads/main" ]]; then
+              echo "::error::The first 0.1.0 release must come from main." >&2
+              exit 1
+            fi
+
+            if [[ -n "$(git tag --list 'v*')" ]]; then
+              echo "::error::Version tags already exist. Use semantic-release, or recover a partial release by hand." >&2
+              exit 1
+            fi
+          fi
+
+      # .releaserc runs scripts/release-create.sh through
+      # @semantic-release/exec, and that script drives Bazel. Without this step
+      # bazel is simply absent on the runner and the prepare phase fails after
+      # the version has already been decided.
+      - name: Set up Bazel
+        uses: bazel-contrib/setup-bazel@c5acdfb288317d0b5c0bbd7a396a3dc868bb0f86 # 0.19.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
+
+      # scripts/release-create.sh is a libsh consumer, so the library has to be
+      # on the machine before it runs. Installed rather than vendored, and
+      # pinned rather than tracking main: libsh is 0.x and says outright that
+      # it ships breaking changes without a major bump, so an unpinned install
+      # would let an upstream release break a release here.
+      - name: Set up libsh
+        env:
+          # renovate: datasource=github-releases depName=adnoctem/libsh
+          LIBSH_VERSION: 0.7.0
+        run: |
+          # The installer is fetched from the pinned tag rather than from main,
+          # so the script that runs and the library it installs are the same
+          # reviewed revision.
+          curl -fsSL "https://raw.githubusercontent.com/adnoctem/libsh/v${LIBSH_VERSION}/bin/install" |
+            bash -s -- --version "v${LIBSH_VERSION}"
+
+          # libman is on PATH only from the next step onwards, so this one
+          # calls it by path to ask where it put the library.
+          echo "${HOME}/.local/bin" >>"${GITHUB_PATH}"
+          echo "LIBSH_DIR=$("${HOME}/.local/bin/libman" path)" >>"${GITHUB_ENV}"
+
+      # The first release cannot come from semantic-release: with no version
+      # tag to compare against it proposes 1.0.0, which the 0.x policy in
+      # the release script refuses. This path builds and publishes exactly
+      # 0.1.0 and creates the tag that every later release is measured from.
+      - name: Publish the initial 0.1.0 release
+        if: inputs.bootstrap
+        env:
+          GH_TOKEN: ${{ secrets.ANC_GITHUB_TOKEN || github.token }}
+        run: |
+          scripts/release-create.sh --version 0.1.0
+
+          gh release create v0.1.0 \
+            --target "${GITHUB_SHA}" \
+            --title v0.1.0 \
+            --generate-notes \
+            dist/*.tar.gz dist/CHECKSUMS_SHA256.txt
+
+      - name: Prepare and publish the release
+        if: ${{ !inputs.bootstrap }}
+        uses: cycjimmy/semantic-release-action@b12c8f6015dc215fe37bc154d4ad456dd3833c90 # v6
+        id: semantic
+        env:
+          GITHUB_TOKEN: ${{ secrets.ANC_GITHUB_TOKEN || github.token }}
+        with:
+          semantic_version: 25
+          branches: |
+            [
+              'main',
+              'next'
+            ]
+          extra_plugins: |
+            @semantic-release/changelog@6.0.3
+            @semantic-release/exec@7.0.3
+            @semantic-release/git@10.0.1
+            conventional-changelog-conventionalcommits@8.0.0
+
+      # One place for the two paths to agree on what happened, so the image job
+      # below does not have to know which one ran.
+      - name: Report what was released
+        id: result
+        env:
+          BOOTSTRAP_RELEASE: ${{ inputs.bootstrap }}
+          SEMANTIC_PUBLISHED: ${{ steps.semantic.outputs.new_release_published }}
+          SEMANTIC_VERSION: ${{ steps.semantic.outputs.new_release_version }}
+        run: |
+          if [[ "${BOOTSTRAP_RELEASE}" == "true" ]]; then
+            published=true
+            version=0.1.0
+          else
+            published="${SEMANTIC_PUBLISHED:-false}"
+            version="${SEMANTIC_VERSION:-}"
+          fi
+
+          echo "published=${published}" >>"${GITHUB_OUTPUT}"
+          echo "version=${version}" >>"${GITHUB_OUTPUT}"
+          echo "Released: published=${published} version=${version:-none}"
+
+      # Publishing is not transactional: the tag, the release assets and three
+      # images in a registry cannot all land or all fail together. Keeping what
+      # was built - including when the run failed - is what makes a partial
+      # release recoverable without rebuilding, which would produce different
+      # bytes under a version somebody may already have downloaded.
+      - name: Retain the prepared release for inspection or retry
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: prepared-release-${{ github.run_id }}
+          path: |
+            dist/**
+          if-no-files-found: warn
+          retention-days: 14
+
+  # Publishes the three service images for the release just created.
+  #
+  # A separate job so it is the only one holding `packages: write`, and
+  # deliberately without a build cache: a cache shared with other workflow runs
+  # could put something into a published image that no reviewed commit ever
+  # built. The images are rebuilt from the release tag instead, which costs a
+  # few minutes and buys a published artefact whose provenance is one commit.
+  images:
+    name: Publish the service images
+    needs: release
+    if: needs.release.outputs.published == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # check out the release tag
+      packages: write # push ghcr.io/adnoctem/{protean,signpost,pivot}
+    strategy:
+      # One job per service rather than one job pushing three. A failure then
+      # names the image that failed, and a retry re-pushes only that one.
+      matrix:
+        service: [protean, signpost, pivot]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: v${{ needs.release.outputs.version }}
+          persist-credentials: false
+          # The image is stamped through the status script, and the tag has to
+          # exist for the commit it describes to be the released one.
+          fetch-depth: 0
+
+      - name: Set up Bazel
+        uses: bazel-contrib/setup-bazel@c5acdfb288317d0b5c0bbd7a396a3dc868bb0f86 # 0.19.0
+        with:
+          bazelisk-cache: true
+          repository-cache: true
+
+      - name: Log in to GHCR
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      # --config=release so the binary in the image is the same build as the
+      # released executable - optimised, statically linked, and stripped of its
+      # symbol table. Without it the image would carry a debug build, which is
+      # most of twice the size and not the artifact anyone reviewed.
+      #
+      # NETORY_VERSION rather than the derived version: the checkout above is
+      # at the tag, so `git describe` would agree - but it agrees only as long
+      # as nothing else is ever tagged on that commit, and the released version
+      # is a fact this job already has.
+      #
+      # The tags are passed at run time because oci_push takes them as
+      # arguments rather than as build inputs, which is what keeps the image
+      # itself identical whatever it is tagged.
+      - name: Push the ${{ matrix.service }} image
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+          SERVICE: ${{ matrix.service }}
+        run: |
+          NETORY_VERSION="${VERSION}" bazel run \
+            --config=release \
+            --stamp \
+            "//cmd/${SERVICE}:push" -- \
+            --tag "${VERSION}" \
+            --tag latest
+
+      - name: Log out of GHCR
+        if: always()
+        run: |
+          docker logout ghcr.io

@@ -1,0 +1,53 @@
+# Bazel 9 removed WORKSPACE entirely, so Bzlmod is the only module system and
+# needs no opt-in flag. gopskit still carries `common --enable_bzlmod` from its
+# Bazel 7 days; under Bazel 9 that flag is accepted but does nothing, so it is
+# deliberately absent here rather than kept as dead configuration.
+
+build --workspace_status_command=$(pwd)/scripts/bazel-create-status.sh
+build --verbose_failures
+
+test --test_env=HOME
+test --test_output=errors
+
+# pkg/kv/valkeykv's conformance suite runs against a real Valkey rather than a
+# fake, because the half of the contract worth testing - what SET NX returns
+# for an existing key, whether SCAN yields an expired one, what INCRBY says
+# about a non-numeric value - is the server's behaviour and not ours. The
+# address is passed through so a developer or CI can point the suite at a
+# server; with none reachable the suite skips itself with instructions.
+test --test_env=VALKEY_TEST_ADDR
+
+# Race-instrumented test run. Keep this a named config rather than a default:
+# rules_go's race instrumentation requires cgo, so it cannot be combined with
+# `//go/config:pure` below - enabling both fails at analysis time with
+# "race instrumentation can't be enabled when cgo is disabled".
+test:race --@io_bazel_rules_go//go/config:race
+
+# Release artifacts. `pure` forces CGO_ENABLED=0 so the binary is statically
+# linked and carries no libc dependency. No first-party source in this repo
+# imports "C", and no C/CXX toolchain is registered for first-party code, so
+# this only pins what is already true - but it pins it where it matters, in the
+# artifact that ships.
+build:release --@io_bazel_rules_go//go/config:pure
+build:release --compilation_mode=opt
+# rules_go has no `strip` setting - `-s -w` through the Go linker is how a Go
+# binary drops its symbol table and DWARF data, and it is what keeps a release
+# artifact from shipping full debug information.
+build:release --@io_bazel_rules_go//go/config:gc_linkopts=-s,-w
+
+# Target platforms, kept separate from `release` so
+# scripts/release-create.sh can cross-build each one from a single release
+# configuration.
+#
+# Linux is the only supported platform for running the services. The macOS
+# builds exist for the half of each CLI that needs no server - `rules
+# validate`, `bundle validate`, `secret generate`, `version` - which is what
+# somebody runs on a laptop or in a CI job while writing a rule set or a
+# manifest. No Windows binaries are shipped.
+#
+# None of this needs a macOS SDK: `release` sets `pure`, so the cross-build is
+# pure Go.
+build:linux_amd64 --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64
+build:linux_arm64 --platforms=@io_bazel_rules_go//go/toolchain:linux_arm64
+build:darwin_amd64 --platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64
+build:darwin_arm64 --platforms=@io_bazel_rules_go//go/toolchain:darwin_arm64

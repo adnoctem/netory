@@ -1,0 +1,58 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "server",
+    srcs = [
+        "admin.go",
+        "backup.go",
+        "backuperr.go",
+        "dyndns2.go",
+        "ratelimit.go",
+        "server.go",
+        "source.go",
+        "update.go",
+    ],
+    importpath = "github.com/adnoctem/netory/internal/protean/server",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//internal/protean/app",
+        "//internal/protean/config",
+        "//internal/protean/provider",
+        "//pkg/admin",
+        "//pkg/backup",
+        "//pkg/event",
+        "//pkg/forwarded",
+        "//pkg/kv",
+        "//pkg/log",
+        "//pkg/notify",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":server",
+    visibility = ["//:__subpackages__"],
+)
+
+go_test(
+    name = "server_test",
+    srcs = [
+        "backup_test.go",
+        "client_test.go",
+        "export_test.go",
+        "server_test.go",
+        "source_test.go",
+    ],
+    embed = [":server"],
+    deps = [
+        "//internal/protean/app",
+        "//internal/protean/config",
+        "//internal/protean/provider",
+        "//pkg/backup",
+        "//pkg/kv/badgerkv",
+        "//pkg/log",
+        "//pkg/secret",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+    ],
+)

@@ -1,0 +1,34 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "valkeykv",
+    srcs = [
+        "internal.go",
+        "valkeykv.go",
+    ],
+    importpath = "github.com/adnoctem/netory/pkg/kv/valkeykv",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/kv",
+        "@com_github_valkey_io_valkey_go//:valkey-go",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":valkeykv",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "valkeykv_test",
+    srcs = ["valkeykv_test.go"],
+    deps = [
+        ":valkeykv",
+        "//pkg/kv",
+        "//pkg/kv/kvtest",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+        "@com_github_valkey_io_valkey_go//:valkey-go",
+    ],
+)

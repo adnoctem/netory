@@ -1,0 +1,29 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "kv",
+    srcs = [
+        "errors.go",
+        "handle.go",
+        "kv.go",
+        "namespace.go",
+        "options.go",
+    ],
+    importpath = "github.com/adnoctem/netory/pkg/kv",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":kv",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "kv_test",
+    srcs = ["kv_test.go"],
+    deps = [
+        ":kv",
+        "@com_github_stretchr_testify//assert",
+    ],
+)

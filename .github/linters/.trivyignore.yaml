@@ -1,0 +1,8 @@
+# Only vulnerabilities with no available fix belong here, documented with why they're safe to
+# skip - anything with a real fix should be bumped instead (see .github/workflows/superlint.yaml).
+vulnerabilities:
+  - id: GO-2026-5932
+    statement: >
+      golang.org/x/crypto/openpgp is unmaintained and flagged by its own advisory as inherently
+      unsafe by design - not a fixable version bump. It's a transitive dependency (pulled in via
+      Helm's OCI/signing support) and this repo never imports the openpgp subpackage itself.

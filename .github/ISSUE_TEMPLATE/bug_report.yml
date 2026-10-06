@@ -1,0 +1,58 @@
+# Copyright Ad Noctem Collective
+# SPDX-License-Identifier: MIT
+
+name: 🐞 Bug
+description: Create a report to help us improve
+labels: ["tech-issues"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue. Please fill in as much of the following form as you're able.
+
+        **Please do not report security vulnerabilities here.** All three services hold credentials -
+        DNS provider tokens, SMTP passwords, backend API credentials - so a vulnerability report belongs
+        in a private advisory rather than a public issue.
+  - type: dropdown
+    attributes:
+      label: Which service?
+      options:
+        - protean (dynDNS control plane)
+        - signpost (script router)
+        - pivot (API proxy)
+        - shared pkg/ or build harness
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Version
+      description: Output of `<service> version`, which reports the build stamps
+      placeholder: protean - 1.2.3
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: What architecture are you using?
+      options:
+        - amd64
+        - arm64
+  - type: textarea
+    attributes:
+      label: What steps will reproduce the bug?
+      placeholder: |
+        1. In this environment...
+        2. With this config...
+        3. Run '...'
+        4. See error...
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What is the expected behaviour?
+  - type: textarea
+    attributes:
+      label: Relevant log output
+      description: |
+        Please redact before pasting. Logs may contain hostnames, client IP addresses and
+        request paths. Never paste a secret, an API token or a database path.
+      render: shell

@@ -1,0 +1,47 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  default: standard
+  enable:
+    - unused
+    - unconvert
+    - misspell
+    - gocritic
+    # All three services wrap errors with %w and return them rather than
+    # panicking, and an unchecked error in a store or a provider call is
+    # exactly the class of bug that shows up as silent data loss.
+    - errorlint
+    - bodyclose
+    # Contexts are threaded through every kv operation; a dropped one defeats
+    # the cancellation the store deliberately checks for.
+    - contextcheck
+    - nilerr
+    - wastedassign
+    # The services build SMTP headers and HTTP responses from event data, so a
+    # format-string mistake there is attacker-reachable rather than cosmetic.
+    - perfsprint
+
+  settings:
+    errcheck:
+      # Writes to a command's own stdout or stderr. A failed write there is not
+      # recoverable - the output is the result, and if it cannot be written
+      # there is nowhere to report that - so checking each one would add a
+      # branch per line of CLI output for no behaviour. Every other unchecked
+      # error is still a finding.
+      exclude-functions:
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
+        - (*text/tabwriter.Writer).Write
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

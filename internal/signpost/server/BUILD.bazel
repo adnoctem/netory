@@ -1,0 +1,48 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "server",
+    srcs = [
+        "access.go",
+        "admin.go",
+        "serve.go",
+        "server.go",
+    ],
+    importpath = "github.com/adnoctem/netory/internal/signpost/server",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//internal/signpost/app",
+        "//internal/signpost/bundle",
+        "//pkg/admin",
+        "//pkg/event",
+        "//pkg/forwarded",
+        "//pkg/log",
+        "//pkg/notify",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":server",
+    visibility = ["//:__subpackages__"],
+)
+
+go_test(
+    name = "server_test",
+    srcs = [
+        "admin_test.go",
+        "export_test.go",
+        "server_test.go",
+    ],
+    embed = [":server"],
+    deps = [
+        "//internal/signpost/app",
+        "//internal/signpost/config",
+        "//pkg/admin",
+        "//pkg/kv/badgerkv",
+        "//pkg/log",
+        "//pkg/secret",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+    ],
+)

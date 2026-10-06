@@ -1,0 +1,62 @@
+# A read-only rule set for the Shopware 6 Admin API.
+#
+# This is an example, not a default. pivot installs nothing: a fresh instance
+# denies everything and reports itself not ready until an operator applies a
+# rule set. Copy this file, read it, change what your installation needs, and
+# apply it:
+#
+#   pivot rules validate ./shopware-readonly.yaml   # no server needed
+#   pivot rules apply ./shopware-readonly.yaml
+#
+# It is complete enough to put in front of a production Shopware: every path a
+# customer can reach is listed, every denial says why, and the two cached
+# routes are the ones worth caching. Read the denials before trusting it - they
+# are judgements about one installation's data, and yours may hold personal
+# data behind a path listed here as allowed.
+#
+# $schema: ../../schema/pivot-rules-v1.json
+rules:
+  deny:
+    - methods: ["*"]
+      glob: /api/_action/**
+      comment: >-
+        several _action routes have shipped with missing ACL checks
+        (CVE-2026-48014 order state transitions, CVE-2026-48008 the Sync API,
+        shopware#20828 version routes), so the whole prefix is refused
+    - methods: ["*"]
+      glob: /api/oauth/**
+      comment: >-
+        pivot answers its own token endpoint and never forwards one; a client
+        reaching the backend's would be authenticating against the backend
+        directly
+    - methods: ["*"]
+      glob: /api/search/customer*
+      comment: customer records are personal data and no customer needs another's
+    - methods: ["*"]
+      glob: /api/search-ids/customer*
+      comment: the id variant of the customer search, denied for the same reason
+    - methods: ["*"]
+      glob: /api/_info/**
+      comment: >-
+        the info endpoints enumerate entities, routes and the installed
+        version, which is reconnaissance rather than data a customer needs
+  allow:
+    - methods: [GET]
+      regex: /api/[a-z0-9-]+(/[0-9a-f]{32})?
+      comment: read one entity collection, or one entity by its 32-character hex id
+    - methods: [POST]
+      glob: /api/search/*
+      comment: the search API takes its query in a POST body, so this is a read
+    - methods: [POST]
+      glob: /api/search-ids/*
+      comment: the id-only search, same reasoning
+routes:
+  - methods: [POST]
+    glob: /api/search/product
+    cache:
+      ttl: 5m
+  - methods: [POST]
+    glob: /api/search/order
+    cache:
+      ttl: 1m
+      encrypt: true

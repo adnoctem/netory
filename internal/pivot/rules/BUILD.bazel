@@ -1,0 +1,46 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "rules",
+    srcs = [
+        "evaluate.go",
+        "glob.go",
+        "normalize.go",
+        "parse.go",
+        "rules.go",
+        "schema.go",
+    ],
+    importpath = "github.com/adnoctem/netory/internal/pivot/rules",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//pkg/schema",
+        "@in_gopkg_yaml_v3//:yaml_v3",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":rules",
+    visibility = ["//:__subpackages__"],
+)
+
+go_test(
+    name = "rules_test",
+    srcs = [
+        "normalize_test.go",
+        "rules_test.go",
+        "schema_test.go",
+    ],
+    # keep: the committed schema and the example rule documents are read
+    # through repo-relative paths, which resolve inside the runfiles tree only
+    # if the files are data dependencies. Gazelle has no way to see that.
+    data = [
+        "//docs/examples/pivot:examples",
+        "//docs/schema:pivot-rules-v1.json",
+    ],  # keep
+    deps = [
+        ":rules",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+    ],
+)

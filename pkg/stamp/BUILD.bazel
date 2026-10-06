@@ -1,0 +1,38 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "stamp",
+    srcs = ["stamp.go"],
+    importpath = "github.com/adnoctem/netory/pkg/stamp",
+    visibility = ["//visibility:public"],
+    # Link-time build metadata. The keys in braces are emitted by
+    # scripts/status.sh through --workspace_status_command (see .bazelrc), and
+    # substituted only when the build is stamped. An unstamped build leaves the
+    # Go defaults ("redacted") in place, which is why stamp.go sets them to
+    # something printable rather than to "".
+    #
+    # Adding a stamp needs all three: the variable in stamp.go, the key in
+    # status.sh, and an entry here. Miss one and the value silently stays
+    # "redacted" instead of failing the build.
+    x_defs = {
+        "Version": "{STABLE_VERSION}",
+        "BuildDate": "{BUILD_DATE}",
+        "CommitSHA": "{GIT_COMMIT_SHA}",
+        "Branch": "{GIT_BRANCH}",
+        "Platform": "{PLATFORM}",
+        "GoVersion": "{GO_VERSION}",
+    },
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":stamp",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "stamp_test",
+    srcs = ["stamp_test.go"],
+    embed = [":stamp"],
+    deps = ["@com_github_stretchr_testify//assert"],
+)

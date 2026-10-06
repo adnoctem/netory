@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "auth",
+    srcs = [
+        "auth.go",
+        "backend.go",
+        "frontend.go",
+    ],
+    importpath = "github.com/adnoctem/netory/internal/pivot/auth",
+    visibility = ["//:__subpackages__"],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":auth",
+    visibility = ["//:__subpackages__"],
+)
+
+go_test(
+    name = "auth_test",
+    srcs = ["auth_test.go"],
+    deps = [
+        ":auth",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+    ],
+)

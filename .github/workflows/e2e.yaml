@@ -1,0 +1,66 @@
+name: "End-to-end"
+
+# This workflow runs the real pivot binary against a real Valkey and a backend
+# speaking the shapes pivot is designed to front. It is the only check that
+# covers three things the unit tests cannot: the binary's own flag and
+# environment wiring, the CLI an operator actually types, and the behaviour of
+# two replicas sharing one store.
+#
+# It does not gate every pull request. It builds a binary, pulls an image and
+# runs two processes, and a change to protean or signpost cannot break it. So
+# it runs nightly to catch upstream rot, on demand, and on a pull request only
+# when the `e2e` label is applied.
+#
+# Note there is deliberately no `paths:` filter. `on.pull_request.paths` and a
+# label check in the job's `if:` compose as AND rather than OR, so a filter
+# here would silently stop the labelled run somebody had just asked for.
+on:
+  schedule:
+    # 03:20 UTC, off the hour to avoid the top-of-hour scheduling crush, and
+    # twenty minutes clear of the sibling repository's nightly run.
+    - cron: "20 3 * * *"
+  workflow_dispatch: {}
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: "${{ github.workflow }}@${{ github.event.pull_request.head.label || github.head_ref || github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  pivot:
+    name: Run pivot end to end
+    # Scheduled and manual runs always go; a pull request needs the label.
+    if: >-
+      github.event_name != 'pull_request' ||
+      contains(github.event.pull_request.labels.*.name, 'e2e')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      # The Go version is declared once, in MODULE.bazel, and go.mod carries
+      # the same one - so taking it from go.mod keeps this job on the toolchain
+      # the Bazel build uses without a third place to update.
+      - name: Set up Go
+        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      # testcontainers starts the Valkey itself, so nothing is declared as a
+      # service here: the test owns its own container lifecycle and cleans up
+      # after itself, which is what makes the same command work locally.
+      - name: Run the end-to-end tests
+        run: |
+          go test -tags e2e -timeout 10m -count=1 ./tests/e2e/...

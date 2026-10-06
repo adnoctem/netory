@@ -1,0 +1,45 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "cmd",
+    srcs = [
+        "backup.go",
+        "cmd.go",
+        "config.go",
+        "configview.go",
+        "escape.go",
+        "host.go",
+        "level.go",
+        "notifier.go",
+        "outbox.go",
+        "output.go",
+        "provider.go",
+        "restore.go",
+        "secret.go",
+        "serve.go",
+        "token.go",
+        "version.go",
+    ],
+    importpath = "github.com/adnoctem/netory/internal/protean/cmd",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//internal/protean/app",
+        "//internal/protean/config",
+        "//internal/protean/provider",
+        "//internal/protean/server",
+        "//pkg/admin",
+        "//pkg/backup",
+        "//pkg/kv/badgerkv",
+        "//pkg/log",
+        "//pkg/notify",
+        "//pkg/secret",
+        "//pkg/stamp",
+        "@com_github_spf13_cobra//:cobra",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":cmd",
+    visibility = ["//:__subpackages__"],
+)

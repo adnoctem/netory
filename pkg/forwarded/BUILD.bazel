@@ -1,0 +1,24 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "forwarded",
+    srcs = ["forwarded.go"],
+    importpath = "github.com/adnoctem/netory/pkg/forwarded",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":forwarded",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "forwarded_test",
+    srcs = ["forwarded_test.go"],
+    deps = [
+        ":forwarded",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+    ],
+)

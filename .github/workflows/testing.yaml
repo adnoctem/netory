@@ -1,0 +1,246 @@
+name: "Testing"
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [main, next]
+  pull_request:
+    branches: [main, next]
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: "${{ github.workflow }}@${{ github.event.pull_request.head.label || github.head_ref || github.ref }}"
+  # Safe to cancel: unlike release.yaml, nothing here signs or publishes
+  # anything, so a superseded run can be dropped without leaving state behind.
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint all code with 'pre-commit'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+
+      - name: Set up golangci-lint
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9
+        with:
+          version: v2.13
+
+      - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
+        with:
+          extra_args: --all-files
+
+  vet:
+    name: Vet and scan for known vulnerabilities
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      # The Go version is declared once, in MODULE.bazel, and the status script
+      # reads it from there too. Taking it from go.mod here keeps this job on
+      # the same toolchain as the Bazel build without a third place to update.
+      - name: Set up Go
+        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Check go.mod and go.sum are tidy
+        run: |
+          go mod tidy
+          git diff --exit-code -- go.mod go.sum
+
+      # govulncheck reports only vulnerabilities actually reachable from this
+      # module's call graph, so a finding here is a real exposure rather than a
+      # transitive advisory that no code path touches.
+      - name: govulncheck
+        run: |
+          go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+
+  test:
+    name: Test
+    needs: [lint]
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+      packages: read
+    env:
+      # pkg/kv/valkeykv's conformance suite runs against a real Valkey and
+      # skips itself when none is reachable. Pointing it at the service below
+      # is what keeps it from being a suite that always skips: the Valkey
+      # store's acceptance criterion is passing the same tests the Badger one
+      # passes, and a skip is not a pass.
+      VALKEY_TEST_ADDR: 127.0.0.1:6379
+    services:
+      valkey:
+        image: valkey/valkey:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "valkey-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Bazel
+        uses: bazel-contrib/setup-bazel@c5acdfb288317d0b5c0bbd7a396a3dc868bb0f86 # 0.19.0
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}
+          repository-cache: true
+
+      # Resolved here rather than as a job-level `env` built from the matrix,
+      # so that every use below is a shell variable instead of a template
+      # expansion into a run block. zizmor flags the latter as a possible
+      # injection and is right to: an expansion is substituted into the script
+      # before bash parses it, so what it carries is code. The home directory
+      # has to come from the shell for the same reason - a tilde that arrives
+      # through a variable is never expanded, and bazel would take it as the
+      # literal name of a directory.
+      - name: Resolve the Bazel cache path
+        run: |
+          if [[ "${RUNNER_OS}" == "macOS" ]]; then
+            echo "CACHE_PATH=/private/var/tmp/_bazel_runner" >>"${GITHUB_ENV}"
+          else
+            echo "CACHE_PATH=${HOME}/.cache/bazel" >>"${GITHUB_ENV}"
+          fi
+
+      - name: Cache Bazel
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: ${{ env.CACHE_PATH }}
+          key: ${{ runner.os }}-bazel-${{ hashFiles('.bazelversion', '.bazelrc', 'MODULE.bazel', 'go.mod') }}
+          restore-keys: |
+            ${{ runner.os }}-bazel-
+
+      - name: Build Bazel artifacts
+        run: |
+          bazel --output_user_root="${CACHE_PATH}" build //...
+
+      # The race detector is the gate on pkg/kv: the namespace is an argument
+      # rather than shared state precisely so that parallel writers to two
+      # namespaces cannot cross, and pkg/kv/kvtest asserts it. Without -race
+      # that suite would still pass against a store with a data race in it.
+      - name: Test Bazel artifacts
+        run: |
+          bazel --output_user_root="${CACHE_PATH}" test //... \
+            --config=race \
+            --test_output=errors
+
+      # The container images are built but not pushed, for the same reason the
+      # release artifacts are: a break in the image build should surface on the
+      # pull request and not when a release is already half-published. Pushing
+      # needs `packages: write`, which this job deliberately does not have.
+      #
+      # --config=release because that is the configuration the published images
+      # are built in, and the point of building them here is to find out that
+      # configuration still works.
+      - name: Build the service images
+        run: |
+          bazel --output_user_root="${CACHE_PATH}" build \
+            --config=release \
+            //cmd/protean:image //cmd/signpost:image //cmd/pivot:image
+
+      # scripts/release-create.sh is a libsh consumer, so the library has to be
+      # on the machine before it runs. Installed rather than vendored, and
+      # pinned rather than tracking main: libsh is 0.x and says outright that
+      # it ships breaking changes without a major bump, so an unpinned install
+      # would let an upstream release break a release here.
+      - name: Set up libsh
+        env:
+          # renovate: datasource=github-releases depName=adnoctem/libsh
+          LIBSH_VERSION: 0.7.0
+        run: |
+          # The installer is fetched from the pinned tag rather than from main,
+          # so the script that runs and the library it installs are the same
+          # reviewed revision.
+          curl -fsSL "https://raw.githubusercontent.com/adnoctem/libsh/v${LIBSH_VERSION}/bin/install" |
+            bash -s -- --version "v${LIBSH_VERSION}"
+
+          # libman is on PATH only from the next step onwards, so this one
+          # calls it by path to ask where it put the library.
+          echo "${HOME}/.local/bin" >>"${GITHUB_PATH}"
+          echo "LIBSH_DIR=$("${HOME}/.local/bin/libman" path)" >>"${GITHUB_ENV}"
+
+      # Build the artifacts that actually ship - static, cgo-free, stripped -
+      # through the same script semantic-release runs, so a break in the release
+      # path shows up on the pull request rather than at release time. It
+      # cross-builds all four targets: Linux is the only platform the services
+      # are supported on, and the macOS builds are for the subcommands that
+      # need no server.
+      #
+      # No --version, so the artifacts are stamped from `git describe`. This
+      # job is checking that the path works, not producing a release.
+      #
+      # This cannot be folded into the race run above: rules_go's race
+      # instrumentation requires cgo, and the release configuration disables it.
+      - name: Build release artifacts
+        env:
+          # The script invokes bazel without the cache flag the steps above
+          # pass explicitly.
+          BAZELISK_HOME: ${{ env.CACHE_PATH }}
+        run: |
+          scripts/release-create.sh
+
+  # Hands the tested commit to Release.
+  #
+  # Dispatching the workflow rather than sending a repository_dispatch event,
+  # because the workflow takes the tested commit as an input and refuses a
+  # branch that has moved on since - a repository_dispatch event has nowhere to
+  # put that and would release whatever the branch head happens to be by then.
+  #
+  # Dispatching is not releasing. Release will not do anything unless
+  # NETORY_RELEASE_ENABLED is `true` in the repository's Actions variables, so
+  # this is a no-op until somebody opens that gate deliberately.
+  dispatch:
+    name: Dispatch a release
+    runs-on: ubuntu-latest
+    needs: [test, vet]
+    permissions:
+      actions: write # dispatch release.yaml
+    steps:
+      - name: Dispatch the tested branch and commit
+        # release only after every job above succeeded
+        # ref: https://github.com/actions/runner/issues/1251
+        if: ${{ github.event_name == 'push' && always() && !contains(join(needs.*.result, ','), 'failure') }}
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              ...context.repo,
+              workflow_id: 'release.yaml',
+              ref: context.ref.replace('refs/heads/', ''),
+              inputs: { sha: context.sha }
+            });

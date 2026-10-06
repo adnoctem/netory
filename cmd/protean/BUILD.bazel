@@ -1,0 +1,39 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("//scripts/bazel:image.bzl", "netory_image")
+
+go_library(
+    name = "protean_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/adnoctem/netory/cmd/protean",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//internal/protean/cmd",
+        "//pkg/admin",
+        "//pkg/stamp",
+    ],
+)
+
+go_binary(
+    name = "protean",
+    embed = [":protean_lib"],
+
+    # Static, so the binary runs in an image carrying no libc. The release
+    # configuration sets this globally; stating it here means the image is
+    # static whichever configuration built it.
+    pure = "on",
+    visibility = ["//visibility:public"],
+)
+
+netory_image(
+    binary = ":protean",
+    description = "Self-hosted dynDNS control plane: accepts dynDNS updates and writes them to an existing DNS provider",
+    exposed_ports = [
+        "8443/tcp",
+    ],
+    service = "protean",
+    state_dirs = [
+        "/var/lib/protean",
+        "/run/protean",
+    ],
+    visibility = ["//visibility:public"],
+)

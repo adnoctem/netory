@@ -1,0 +1,9 @@
+# configure Trivy
+# ref: https://trivy.dev/docs/guide/references/configuration/config-file/
+# pkg/helm/testdata/testchart is a Go test fixture, not a real chart - Trivy's Helm
+# misconfiguration scanner has no business validating it. skip-dirs needs a glob (a bare
+# directory name only matches at the scan root, not nested paths like pkg/helm/testdata).
+scan:
+  # Same as '--skip-dirs'
+  skip-dirs:
+    - "**/testdata/**"

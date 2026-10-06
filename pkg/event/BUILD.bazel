@@ -1,0 +1,43 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "event",
+    srcs = [
+        "bus.go",
+        "claim.go",
+        "dedup.go",
+        "event.go",
+        "id.go",
+        "outbox.go",
+        "retry.go",
+    ],
+    importpath = "github.com/adnoctem/netory/pkg/event",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/kv",
+        "//pkg/log",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":event",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "event_test",
+    srcs = [
+        "bus_test.go",
+        "claim_test.go",
+        "event_test.go",
+    ],
+    deps = [
+        ":event",
+        "//pkg/kv",
+        "//pkg/kv/badgerkv",
+        "//pkg/log",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+    ],
+)

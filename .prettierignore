@@ -1,0 +1,9 @@
+# Generated files whose exact bytes are asserted by a test.
+#
+# Prettier is authoritative for everything a human writes here, and it would
+# reformat these too - it collapses short JSON arrays onto a single line. Both
+# documents are produced by a Schema() function over the Go types and compared
+# byte for byte by a test beside it, so Prettier's preference and the
+# generator's output cannot both win. The generator does, because it is the
+# thing that keeps a schema in step with the types it describes.
+docs/schema/

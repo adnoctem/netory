@@ -1,0 +1,16 @@
+# A rule set that permits nothing.
+#
+# Two uses. It is the starting point for a backend this repository has no
+# example for: begin from a document that denies everything, then add one allow
+# rule at a time and check each with `pivot rules test <path>`. And it is how
+# an instance is turned off without stopping it - applying this takes effect on
+# every replica within a second, and the customers' credentials and rate-limit
+# buckets survive it.
+#
+#   pivot rules apply ./deny-all.yaml
+#
+# `pivot rules apply --deny-all` does the same thing without a file, which is
+# the form to reach for when the reason you are applying it is an incident.
+#
+# $schema: ../../schema/pivot-rules-v1.json
+rules: {}

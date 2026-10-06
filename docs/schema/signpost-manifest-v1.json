@@ -1,0 +1,78 @@
+{
+  "$defs": {
+    "route": {
+      "additionalProperties": false,
+      "properties": {
+        "content_type": {
+          "description": "The Content-Type to serve. Optional; inferred from the file extension when absent, falling back to text/plain so a script can be read before it is piped.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "file": {
+          "description": "The file inside the archive, relative to its root, using '/' as the separator. It may not be absolute and may not escape the archive.",
+          "minLength": 1,
+          "pattern": "^[^/\\\\][^\\\\]*$",
+          "type": "string"
+        },
+        "path": {
+          "description": "The URL path to serve at, beginning with '/' and already canonical. It may not end in .sha256, may not be the server's health path, and its first segment may not look like /v<release>/ - all three are reserved by the server.",
+          "maxLength": 512,
+          "minLength": 2,
+          "not": {
+            "pattern": "\\.sha256$"
+          },
+          "pattern": "^/[A-Za-z0-9._/-]+$",
+          "type": "string"
+        },
+        "skip_truncation_check": {
+          "default": false,
+          "description": "Opts this one route out of the truncation-protection check. The check is a heuristic over shell and PowerShell syntax and will occasionally be wrong about a legitimate script, so the escape hatch exists - but it is recorded on the release, reported by `bundle list` and carried in the publish event, and an instance may refuse it outright.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "file",
+        "path"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://adnoctem.github.io/netory/schema/signpost-manifest-v1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A signpost bundle's manifest, at the root of a .zip or .tar.gz archive as signpost.yaml, signpost.yml or signpost.json. Satisfying this schema means the manifest is well-formed; signpost applies further checks at publish time that JSON Schema cannot express, including reserved paths, route uniqueness, that every referenced file is in the archive, and the truncation-protection check on every script.",
+  "properties": {
+    "description": {
+      "description": "An optional note shown by `signpost bundle list`.",
+      "type": "string"
+    },
+    "release": {
+      "description": "This bundle's identifier, unique per signpost instance. It becomes a URL segment (/v<release>/...), a storage directory name and a database key, which is why the character set is narrow.",
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "type": "string"
+    },
+    "routes": {
+      "description": "The paths this bundle serves. Each one is also served with a .sha256 suffix carrying its checksum, and at /v<release>/<path> for pinned installs.",
+      "items": {
+        "$ref": "#/$defs/route"
+      },
+      "maxItems": 256,
+      "minItems": 1,
+      "type": "array"
+    },
+    "version": {
+      "const": 1,
+      "description": "The manifest schema version. Only 1 is understood by this build.",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "release",
+    "routes",
+    "version"
+  ],
+  "title": "signpost bundle manifest",
+  "type": "object"
+}

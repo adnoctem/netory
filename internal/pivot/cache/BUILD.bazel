@@ -1,0 +1,36 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "cache",
+    srcs = [
+        "cache.go",
+        "codec.go",
+        "store.go",
+    ],
+    importpath = "github.com/adnoctem/netory/internal/pivot/cache",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//pkg/kv",
+        "//pkg/log",
+        "//pkg/seal",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":cache",
+    visibility = ["//:__subpackages__"],
+)
+
+go_test(
+    name = "cache_test",
+    srcs = ["cache_test.go"],
+    deps = [
+        ":cache",
+        "//pkg/kv",
+        "//pkg/kv/badgerkv",
+        "//pkg/log",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+    ],
+)

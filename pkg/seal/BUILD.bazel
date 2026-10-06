@@ -1,0 +1,24 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "seal",
+    srcs = ["seal.go"],
+    importpath = "github.com/adnoctem/netory/pkg/seal",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":seal",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "seal_test",
+    srcs = ["seal_test.go"],
+    deps = [
+        ":seal",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+    ],
+)

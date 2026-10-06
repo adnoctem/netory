@@ -1,0 +1,287 @@
+{
+  "$defs": {
+    "allowRule": {
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "not": {
+            "required": [
+              "regex"
+            ]
+          },
+          "required": [
+            "glob"
+          ]
+        },
+        {
+          "not": {
+            "required": [
+              "glob"
+            ]
+          },
+          "required": [
+            "regex"
+          ]
+        }
+      ],
+      "properties": {
+        "comment": {
+          "description": "An optional note. Shown by `pivot rules list` and recorded in the audit entry of every request this rule decided, which is what makes \"why was this denied\" answerable without reading the rule file. Every deny in the documented examples carries one.",
+          "type": "string"
+        },
+        "glob": {
+          "description": "A path pattern. Must begin with '/', may not contain a backslash, may not end in '/' - a normalized path never does, so such a pattern could never match - and '**' must be a whole segment, as in /api/**. Exactly one of glob or regex is required.",
+          "minLength": 1,
+          "not": {
+            "anyOf": [
+              {
+                "pattern": ".+/$"
+              },
+              {
+                "pattern": "\\*\\*\\*"
+              },
+              {
+                "pattern": "[^/]\\*\\*|\\*\\*[^/]"
+              }
+            ]
+          },
+          "pattern": "^/([^/\\\\]*(/[^/\\\\]*)*)?$",
+          "type": "string"
+        },
+        "methods": {
+          "description": "The methods this rule covers. pivot forwards GET, HEAD, POST and nothing else, whatever a rule says; POST is in that set because a read is not always a GET - plenty of search APIs take their query in a body. Case is not significant.",
+          "items": {
+            "pattern": "^([Gg][Ee][Tt]|[Hh][Ee][Aa][Dd]|[Pp][Oo][Ss][Tt])$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "regex": {
+          "description": "A path pattern as an RE2 expression, anchored at both ends by pivot rather than by you. Whether it compiles is checked by `pivot rules validate`, not here. Exactly one of glob or regex is required.",
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "methods"
+      ],
+      "type": "object"
+    },
+    "cache": {
+      "additionalProperties": false,
+      "properties": {
+        "encrypt": {
+          "default": false,
+          "description": "Seals the cached body with a key derived from PIVOT_SECRET. Off by default, and the default is the unsafe direction for anything touching personal data: pivot cannot work out from a path whether a response carries any, so this is a judgement the operator makes per route.",
+          "type": "boolean"
+        },
+        "shared": {
+          "default": false,
+          "description": "Drops the client scope from the cache key, so one cached entry serves every client. Only correct when the response cannot differ between clients, which pivot cannot verify - two clients whose backend credentials carry different permissions can get different responses from one path.",
+          "type": "boolean"
+        },
+        "ttl": {
+          "description": "How long a response may be cached; zero means not cacheable. In YAML this is a Go duration string such as 30s, 1m or 1h. In JSON it is an integer count of nanoseconds, because that is how Go encodes a duration - a JSON document with \"ttl\": \"1m\" is rejected by the decoder, which is why both forms appear here.",
+          "oneOf": [
+            {
+              "description": "A Go duration string, as written in YAML.",
+              "pattern": "^[0-9]+(\\.[0-9]+)?(ns|us|µs|ms|s|m|h)([0-9]+(\\.[0-9]+)?(ns|us|µs|ms|s|m|h))*$",
+              "type": "string"
+            },
+            {
+              "description": "Nanoseconds, as written in JSON.",
+              "minimum": 0,
+              "type": "integer"
+            }
+          ]
+        }
+      },
+      "required": [
+        "ttl"
+      ],
+      "type": "object"
+    },
+    "denyRule": {
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "not": {
+            "required": [
+              "regex"
+            ]
+          },
+          "required": [
+            "glob"
+          ]
+        },
+        {
+          "not": {
+            "required": [
+              "glob"
+            ]
+          },
+          "required": [
+            "regex"
+          ]
+        }
+      ],
+      "properties": {
+        "comment": {
+          "description": "An optional note. Shown by `pivot rules list` and recorded in the audit entry of every request this rule decided, which is what makes \"why was this denied\" answerable without reading the rule file. Every deny in the documented examples carries one.",
+          "type": "string"
+        },
+        "glob": {
+          "description": "A path pattern. Must begin with '/', may not contain a backslash, may not end in '/' - a normalized path never does, so such a pattern could never match - and '**' must be a whole segment, as in /api/**. Exactly one of glob or regex is required.",
+          "minLength": 1,
+          "not": {
+            "anyOf": [
+              {
+                "pattern": ".+/$"
+              },
+              {
+                "pattern": "\\*\\*\\*"
+              },
+              {
+                "pattern": "[^/]\\*\\*|\\*\\*[^/]"
+              }
+            ]
+          },
+          "pattern": "^/([^/\\\\]*(/[^/\\\\]*)*)?$",
+          "type": "string"
+        },
+        "methods": {
+          "description": "The methods this rule covers. pivot forwards GET, HEAD, POST and nothing else, whatever a rule says; POST is in that set because a read is not always a GET - plenty of search APIs take their query in a body. Case is not significant. \"*\" means every forwardable method.",
+          "items": {
+            "pattern": "^([Gg][Ee][Tt]|[Hh][Ee][Aa][Dd]|[Pp][Oo][Ss][Tt]|\\*)$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "regex": {
+          "description": "A path pattern as an RE2 expression, anchored at both ends by pivot rather than by you. Whether it compiles is checked by `pivot rules validate`, not here. Exactly one of glob or regex is required.",
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "methods"
+      ],
+      "type": "object"
+    },
+    "route": {
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "not": {
+            "required": [
+              "regex"
+            ]
+          },
+          "required": [
+            "glob"
+          ]
+        },
+        {
+          "not": {
+            "required": [
+              "glob"
+            ]
+          },
+          "required": [
+            "regex"
+          ]
+        }
+      ],
+      "properties": {
+        "cache": {
+          "$ref": "#/$defs/cache",
+          "description": "The caching configuration for paths this route matches. Required: a route exists to configure caching, so one without a cache block says nothing."
+        },
+        "glob": {
+          "description": "A path pattern. Must begin with '/', may not contain a backslash, may not end in '/' - a normalized path never does, so such a pattern could never match - and '**' must be a whole segment, as in /api/**. Exactly one of glob or regex is required.",
+          "minLength": 1,
+          "not": {
+            "anyOf": [
+              {
+                "pattern": ".+/$"
+              },
+              {
+                "pattern": "\\*\\*\\*"
+              },
+              {
+                "pattern": "[^/]\\*\\*|\\*\\*[^/]"
+              }
+            ]
+          },
+          "pattern": "^/([^/\\\\]*(/[^/\\\\]*)*)?$",
+          "type": "string"
+        },
+        "methods": {
+          "description": "The methods this rule covers. pivot forwards GET, HEAD, POST and nothing else, whatever a rule says; POST is in that set because a read is not always a GET - plenty of search APIs take their query in a body. Case is not significant.",
+          "items": {
+            "pattern": "^([Gg][Ee][Tt]|[Hh][Ee][Aa][Dd]|[Pp][Oo][Ss][Tt])$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "regex": {
+          "description": "A path pattern as an RE2 expression, anchored at both ends by pivot rather than by you. Whether it compiles is checked by `pivot rules validate`, not here. Exactly one of glob or regex is required.",
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "cache"
+      ],
+      "type": "object"
+    },
+    "rules": {
+      "additionalProperties": false,
+      "properties": {
+        "allow": {
+          "description": "Rules that permit a request. Nothing is permitted without one. These must name their methods explicitly; the wildcard is refused here, because an allow rule is the one place where being broader than intended is unsafe.",
+          "items": {
+            "$ref": "#/$defs/allowRule"
+          },
+          "maxItems": 512,
+          "type": "array"
+        },
+        "deny": {
+          "description": "Rules that refuse a request. Evaluated before the allow list and final - a per-client document cannot reopen a path the global deny list refuses. These may use the \"*\" method wildcard.",
+          "items": {
+            "$ref": "#/$defs/denyRule"
+          },
+          "maxItems": 512,
+          "type": "array"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "$id": "https://adnoctem.github.io/netory/schema/pivot-rules-v1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A pivot rule document, as `pivot rules apply` takes it in YAML or JSON. Nothing is permitted by default: a path reaches the backend only through an explicit allow rule, and the deny list is evaluated first and wins. Satisfying this schema means the document is well-formed; `pivot rules validate` runs the compiler that decides whether it is usable, including whether every regex compiles and whether the whole document is within the entry limit.",
+  "properties": {
+    "routes": {
+      "description": "Per-path caching. A path with no route here is forwarded and never cached. Routes are not a second allow list - a route does not permit anything the rules do not.",
+      "items": {
+        "$ref": "#/$defs/route"
+      },
+      "maxItems": 512,
+      "type": "array"
+    },
+    "rules": {
+      "$ref": "#/$defs/rules",
+      "description": "The deny and allow lists. Required, and required to be meaningful: a document with no allow list denies everything, which is a valid rule set and the state a fresh pivot starts in."
+    }
+  },
+  "required": [
+    "rules"
+  ],
+  "title": "pivot rule document",
+  "type": "object"
+}

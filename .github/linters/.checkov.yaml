@@ -1,0 +1,10 @@
+---
+# Checkov configuration - see
+# https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html
+# pkg/helm/testdata/testchart is a Go test fixture, not a real chart - Checkov's Helm
+# misconfiguration scanner has no business validating it. skip-path is regex-matched against
+# the path relative to the repo root with no implicit word boundaries, so these bare terms
+# match "testdata"/"testchart" appearing anywhere in a path, nested or not.
+skip-path:
+  - testdata
+  - testchart

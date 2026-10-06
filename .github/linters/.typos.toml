@@ -1,0 +1,21 @@
+[files]
+extend-exclude = []
+
+[default]
+# Identifiers that are correct here and not typos: "dyndns" and "DynDNS2" are
+# the protocol's own spelling, and "Valkey" and "Badger" are product names.
+extend-ignore-identifiers-re = [".*[Dd]yn[Dd]ns.*", ".*[Vv]alkey.*"]
+
+[default.extend-identifiers]
+# HELO is the SMTP command from RFC 5321, not a misspelling of HELLO.
+HELO = "HELO"
+# ANC_GITHUB_TOKEN is the organisation's release identity: ANC is Ad Noctem
+# Collective, not a misspelling of AND. It appears in prose as well as in the
+# workflows, and the workflows are excluded from this hook by extension.
+ANC = "ANC"
+ANC_GITHUB_TOKEN = "ANC_GITHUB_TOKEN"
+dyndns = "dyndns"
+DynDNS = "DynDNS"
+Valkey = "Valkey"
+valkey = "valkey"
+valkeykv = "valkeykv"

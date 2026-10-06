@@ -1,0 +1,42 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "admin",
+    srcs = [
+        "admin.go",
+        "client.go",
+        "peer.go",
+        "peer_linux.go",
+        "peer_other.go",
+        "server.go",
+        "upload.go",
+    ],
+    importpath = "github.com/adnoctem/netory/pkg/admin",
+    visibility = ["//visibility:public"],
+    deps = ["//pkg/log"],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":admin",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "admin_test",
+    srcs = [
+        "admin_test.go",
+        "support_linux_test.go",
+        "support_other_test.go",
+        "syncbuffer_test.go",
+        "umask_linux_test.go",
+        "umask_other_test.go",
+        "upload_test.go",
+    ],
+    deps = [
+        ":admin",
+        "//pkg/log",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+    ],
+)

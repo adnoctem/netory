@@ -1,0 +1,7 @@
+# The generated schemas are committed here and consumed by the tests that
+# assert they still match the Go types, so they have to be visible to those
+# tests as Bazel data dependencies rather than only as files on disk.
+exports_files([
+    "pivot-rules-v1.json",
+    "signpost-manifest-v1.json",
+])

@@ -1,0 +1,52 @@
+{
+  "branches": ["main", "next"],
+  "plugins": [
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "conventionalcommits",
+        "parserOpts": {
+          "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING"]
+        },
+        "releaseRules": [{ "breaking": true, "release": "minor" }]
+      }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits",
+        "parserOpts": {
+          "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING"]
+        }
+      }
+    ],
+    [
+      "@semantic-release/exec",
+      {
+        "verifyReleaseCmd": "scripts/release-create.sh --version ${nextRelease.version} --dry-run",
+        "prepareCmd": "scripts/release-create.sh --version ${nextRelease.version}"
+      }
+    ],
+    [
+      "@semantic-release/github",
+      {
+        "assets": [
+          { "path": "dist/*.tar.gz" },
+          { "path": "dist/CHECKSUMS_SHA256.txt" }
+        ]
+      }
+    ],
+    [
+      "@semantic-release/changelog",
+      {
+        "changelogFile": "CHANGELOG.md"
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["CHANGELOG.md"]
+      }
+    ]
+  ]
+}

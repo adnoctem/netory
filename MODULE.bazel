@@ -1,0 +1,93 @@
+"""netory is a monorepo of self-hosted network services: protean, signpost and pivot"""
+
+module(
+    name = "netory",
+    repo_name = "com_github_adnoctem_netory",
+)
+
+# Bazel 9.2.0 (see .bazelversion) is verified against this pair; see
+# docs/design/protean.md section 10 for what was exercised.
+bazel_dep(name = "rules_go", version = "0.64.1", repo_name = "io_bazel_rules_go")
+bazel_dep(name = "gazelle", version = "0.54.0", repo_name = "bazel_gazelle")
+
+# Container images for all three services, following the setup gopskit
+# introduced for its bridge. Verified against the pinned Bazel 9.2.0 LTS here,
+# since gopskit runs these on Bazel 7 and that is not the same statement.
+bazel_dep(name = "aspect_bazel_lib", version = "2.22.5")
+bazel_dep(name = "platforms", version = "1.1.0")
+bazel_dep(name = "rules_oci", version = "2.3.0")
+bazel_dep(name = "tar.bzl", version = "0.10.9")
+
+go_sdk = use_extension("@io_bazel_rules_go//go:extensions.bzl", "go_sdk")
+go_sdk.download(version = "1.26.8")
+
+go_deps = use_extension("@bazel_gazelle//:extensions.bzl", "go_deps")
+go_deps.from_file(go_mod = "//:go.mod")
+
+# Kept in step with go.mod by `bazel mod tidy`; an entry here for a module
+# go.mod does not require fails the build rather than being ignored.
+#
+# The two testcontainers entries are declared and unused: they are required by
+# go.mod for tests/e2e, which is outside the Bazel build (see BUILD.bazel), so
+# `bazel mod tidy` lists them while no target depends on them and nothing
+# fetches them. `go list -deps ./cmd/...` shows zero testcontainers or Docker
+# packages in any shipped binary.
+use_repo(
+    go_deps,
+    "com_github_aws_aws_sdk_go_v2",
+    "com_github_aws_aws_sdk_go_v2_config",
+    "com_github_aws_aws_sdk_go_v2_service_s3",
+    "com_github_dgraph_io_badger_v4",
+    "com_github_libdns_cloudflare",
+    "com_github_libdns_libdns",
+    "com_github_libdns_route53",
+    "com_github_spf13_cobra",
+    "com_github_stretchr_testify",
+    "com_github_testcontainers_testcontainers_go",
+    "com_github_testcontainers_testcontainers_go_modules_valkey",
+    "com_github_valkey_io_valkey_go",
+    "in_gopkg_yaml_v3",
+    "org_golang_x_crypto",
+)
+
+# The base image for all three services.
+#
+# Not an empty base, which is what gopskit's bridge uses - and the difference
+# is not a preference. All three of these services make outbound TLS
+# connections: protean to a DNS provider's API, signpost to an SMTP relay or a
+# webhook, pivot to the backend it fronts. An image with no CA bundle fails
+# every one of them with "x509: certificate signed by unknown authority", and
+# the fix would be asking every operator to mount a bundle. distroless/static
+# carries ca-certificates and tzdata and nothing else - about 2 MB, no shell,
+# no package manager.
+#
+# The `nonroot` variant runs as 65532 and declares that user in /etc/passwd,
+# so the pod satisfies the "restricted" Pod Security Standard without the
+# image needing a passwd entry of its own.
+#
+# Pinned by digest rather than by tag, which is what makes the build
+# reproducible: a tag is a moving reference and `:nonroot` means something
+# different next month. Renovate updates the digest.
+oci = use_extension("@rules_oci//oci:extensions.bzl", "oci")
+oci.pull(
+    name = "distroless_static",
+    digest = "sha256:afa5c872c891853ca7fcf1f12c3edb23f7eeef36189728842dd51042ff57f7ab",
+    image = "gcr.io/distroless/static-debian12",
+    platforms = [
+        "linux/amd64",
+        "linux/arm64/v8",
+    ],
+    tag = "nonroot",
+)
+use_repo(oci, "distroless_static", "distroless_static_linux_amd64", "distroless_static_linux_arm64_v8")
+
+# Disable Protobuf BUILD file generation for BadgerDB. Its generated .pb.go
+# files are already checked in, and letting Gazelle drive proto rules instead
+# pulls in a toolchain that needs a C/CXX compiler - which this repo
+# deliberately does not register (no cgo).
+go_deps.gazelle_override(
+    directives = [
+        "gazelle:proto disable_global",
+    ],
+    path = "github.com/dgraph-io/badger/v4",
+)

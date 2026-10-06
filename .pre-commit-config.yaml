@@ -1,0 +1,86 @@
+exclude: (.*.mod|.*.sum|.*.lock|.*.?bazel.*|.*CHANGELOG.md$)
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+        args: ["--allow-multiple-documents"]
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.49.1
+    hooks:
+      - id: markdownlint
+        exclude: ^CHANGELOG\.md$
+        args:
+          - "-c"
+          - ".github/linters/.markdown-lint.yml"
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.12
+    hooks:
+      - id: actionlint
+
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.30.0
+    hooks:
+      - id: zizmor
+        args:
+          - "-c"
+          - ".github/linters/zizmor.yaml"
+
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.24.6
+    hooks:
+      - id: typos
+        exclude: (.*\.yaml|^CHANGELOG.md$)
+        args:
+          - "--config"
+          - ".github/linters/.typos.toml"
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.0
+    hooks:
+      - id: gitleaks
+        name: "Scan for potentially leaked secret values using 'gitleaks'"
+
+  # Go sources
+  #
+  - repo: https://github.com/tekwizely/pre-commit-golang # See 'pre-commit help autoupdate'
+    rev: v1.0.0-rc.4
+    hooks:
+      - id: go-mod-tidy-repo
+      - id: go-build-repo-mod
+      - id: golangci-lint-repo-mod
+
+  # Shell sources
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1-1
+    hooks:
+      - id: shellcheck
+        name: "Lint Shell files with 'shellcheck'"
+        args: ["-x"]
+
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.13.1-1
+    hooks:
+      - id: shfmt
+        name: "Format Shell files with 'shfmt'"
+
+  # Local hooks
+  - repo: local
+    hooks:
+      - id: prettier-format
+        name: Prettier format
+        entry: bun x prettier --write
+        language: system
+        files: \.(md|json|ya?ml)$
+        # Without this, pre-commit can batch matched files across several
+        # parallel invocations; concurrent 'bun x' processes then race to
+        # resolve/install the same 'prettier' package into a cold cache,
+        # which fails with "could not determine executable to run for
+        # package prettier" on the losing side.
+        require_serial: true

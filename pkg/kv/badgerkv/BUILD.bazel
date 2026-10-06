@@ -1,0 +1,40 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "badgerkv",
+    srcs = [
+        "backup.go",
+        "badgerkv.go",
+        "internal.go",
+        "keylock.go",
+    ],
+    importpath = "github.com/adnoctem/netory/pkg/kv/badgerkv",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/kv",
+        "//pkg/log",
+        "@com_github_dgraph_io_badger_v4//:badger",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":badgerkv",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "badgerkv_test",
+    srcs = [
+        "backup_test.go",
+        "badgerkv_test.go",
+    ],
+    deps = [
+        ":badgerkv",
+        "//pkg/kv",
+        "//pkg/kv/kvtest",
+        "//pkg/log",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+    ],
+)

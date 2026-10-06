@@ -1,0 +1,6 @@
+# Findings that only apply to a specific line are suppressed inline via
+# `# zizmor: ignore[rule]` comments at the exact span, with a justification
+# comment above. Nothing needs a blanket per-file ignore: the template
+# expansions in testing.yaml that used to need one are shell variables now, and
+# a per-file ignore would also hide the next real finding in that file.
+rules: {}

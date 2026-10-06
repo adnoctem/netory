@@ -1,0 +1,16 @@
+load("@bazel_gazelle//:def.bzl", "gazelle")
+
+# gazelle:prefix github.com/adnoctem/netory
+gazelle(name = "gazelle")
+
+# make sure that others can import either using the import or go_default_library naming conventions
+# gazelle:go_naming_convention import_alias
+
+# tests/e2e is deliberately outside the Bazel build.
+#
+# Its tests are behind the `e2e` build tag and need a Docker socket and a Go
+# toolchain to build the binary under test - neither of which belongs in a
+# hermetic sandbox. `bazel test //...` promising to run them while silently
+# skipping them would be worse than not offering them at all, so they run
+# through `go test -tags e2e` and a workflow of their own instead.
+# gazelle:exclude tests

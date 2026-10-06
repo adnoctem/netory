@@ -1,0 +1,57 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "app",
+    srcs = [
+        "alias.go",
+        "cache.go",
+        "event.go",
+        "hash.go",
+        "notifier.go",
+        "publish.go",
+        "release.go",
+        "routes.go",
+        "settings.go",
+        "state.go",
+        "storage.go",
+    ],
+    importpath = "github.com/adnoctem/netory/internal/signpost/app",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//internal/signpost/bundle",
+        "//internal/signpost/config",
+        "//pkg/event",
+        "//pkg/kv",
+        "//pkg/kv/badgerkv",
+        "//pkg/log",
+        "//pkg/notify",
+        "//pkg/secret",
+        "//pkg/stamp",
+    ],
+)
+
+alias(
+    name = "go_default_library",
+    actual = ":app",
+    visibility = ["//:__subpackages__"],
+)
+
+go_test(
+    name = "app_test",
+    srcs = [
+        "app_test.go",
+        "export_test.go",
+        "sign_test.go",
+    ],
+    embed = [":app"],
+    deps = [
+        "//internal/signpost/bundle",
+        "//internal/signpost/config",
+        "//pkg/kv/badgerkv",
+        "//pkg/log",
+        "//pkg/secret",
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+        "@org_golang_x_crypto//blake2b",
+    ],
+)
