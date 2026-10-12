@@ -77,7 +77,7 @@ it is missing:
 
 ```sh
 # pivot's store, against a real Valkey. CI runs one as a service container.
-docker run --rm -d -p 6379:6379 valkey/valkey:8-alpine
+docker run --rm -d -p 6379:6379 valkey/valkey:9-alpine
 VALKEY_TEST_ADDR=127.0.0.1:6379 bazel test //... --config=race
 
 # The end-to-end tests: the real binaries, a Valkey from testcontainers, and a

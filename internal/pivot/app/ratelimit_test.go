@@ -59,7 +59,7 @@ func valkeyAddress(t *testing.T) string {
 	conn, err := net.DialTimeout("tcp", addr, 2*time.Second)
 	if err != nil {
 		t.Skipf("no Valkey reachable at %s (%v)\n"+
-			"Start one with:  docker run --rm -p 6379:6379 valkey/valkey:8-alpine\n"+
+			"Start one with:  docker run --rm -p 6379:6379 valkey/valkey:9-alpine\n"+
 			"Or point %s at an existing server.", addr, err, AddressEnv)
 	}
 

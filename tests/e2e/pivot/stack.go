@@ -36,7 +36,7 @@ const AdoptEnv = "PIVOT_E2E_VALKEY"
 // Pinned to a major-minor tag rather than a digest: this test exists partly to
 // catch upstream rot, so following patch releases is the point. A digest would
 // pin away the thing being watched for.
-const ValkeyImage = "valkey/valkey:8-alpine"
+const ValkeyImage = "valkey/valkey:9-alpine"
 
 // readyTimeout bounds the wait for a replica to serve.
 const readyTimeout = 30 * time.Second
