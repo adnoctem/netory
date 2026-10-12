@@ -107,6 +107,19 @@ The hooks cover formatting, spelling, Markdown, secret scanning, workflow config
 the Go module. They do not run the test suite on every commit. CI runs the same hooks plus the
 Bazel build and tests; a separate Super-Linter workflow keeps the broader shared checks.
 
+One hook is weaker locally than in CI unless you help it. zizmor's `ref-version-mismatch` audit
+checks that an action's pinned SHA is the commit its version comment names, and that needs the
+GitHub API - so without a token zizmor runs its offline audits only, passes, and the same check
+fails in Super-Linter afterwards. That has happened here. Export a token and the hook matches CI:
+
+```sh
+export GH_TOKEN="$(gh auth token)"
+```
+
+Pin every action to the exact commit of an exact release, with the full version in the comment -
+`# v7.0.1`, not `# v7`. A major-only comment names a moving tag, so the pin and the comment drift
+apart the moment that tag moves, which is precisely what the audit reports.
+
 ## Generated files
 
 Two documents under `docs/schema/` are generated from the Go types that validate them, not written:

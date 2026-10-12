@@ -6,6 +6,14 @@ extend-exclude = []
 # the protocol's own spelling, and "Valkey" and "Badger" are product names.
 extend-ignore-identifiers-re = [".*[Dd]yn[Dd]ns.*", ".*[Vv]alkey.*"]
 
+# minisign's own published public key, which the compatibility test vector in
+# internal/signpost/bundle/testdata is verified against. It is base64, so the
+# "Iz" in the middle of it is not a misspelling of "Is" - and it cannot be
+# corrected, because changing one character makes it a different key. Spelled
+# out rather than matched by a general base64 pattern: a blanket rule over
+# long alphanumeric runs would also hide real typos in real words.
+extend-ignore-re = ["RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3"]
+
 [default.extend-identifiers]
 # HELO is the SMTP command from RFC 5321, not a misspelling of HELLO.
 HELO = "HELO"

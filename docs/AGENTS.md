@@ -87,6 +87,11 @@ Three things catch people out, in roughly this order:
   libsh preamble, `<domain>-<verb>[-<object>].sh` filenames with a matching `<domain>_<verb>::`
   function namespace, and a `#####` comment block over each function giving its Arguments, Outputs
   and Returns. shfmt's defaults decide the formatting.
+- Pin every GitHub action to the exact commit of an exact release, with the full version in the
+  comment - `# v7.0.1`, not `# v7`. A major-only comment names a moving tag, so the pin and the
+  comment drift apart as soon as that tag moves. zizmor's `ref-version-mismatch` audit reports it,
+  but only with a token: export `GH_TOKEN` before running the hooks, or CI catches it after you
+  push.
 - Prettier is authoritative for Markdown, JSON and YAML, and it renumbers lists, rewrites emphasis
   and reformats JSON. Write for it rather than fighting it, and run it before committing. Generated
   JSON under `docs/schema/` is excluded through `.prettierignore`.

@@ -50,6 +50,12 @@
       "matchDatasources": ["golang-version"],
       "groupName": "go toolchain",
       "description": "One pull request for both pins. A release that compiled with one Go version and declared another in go.mod is a release whose stamp lies about how it was built."
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["major"],
+      "minimumReleaseAge": "14 days",
+      "description": "A major action release waits two weeks before it is proposed. The reason is a specific one: semantic-release-action v8.0.0 was pinned here hours after it was published, and the action that performs releases is the wrong place to be first. Two weeks is roughly how long it takes for a first patch release to appear, which is the signal worth waiting for. Minor and patch updates are not delayed."
     }
   ],
   "customManagers": [
