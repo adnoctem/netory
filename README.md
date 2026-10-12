@@ -1,5 +1,9 @@
 <p align="center">
     <!-- netory -->
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://github.com/adnoctem/artwork/blob/687c9fd23750178c27f97c9e76da619ab716f016/projects/netory/icon/white/icon-netory-white.png?raw=true">
+      <img src="https://github.com/adnoctem/artwork/blob/687c9fd23750178c27f97c9e76da619ab716f016/projects/netory/icon/color/icon-netory-color.png?raw=true" alt="netory Logo" width="225">
+    </picture>
     <h1 align="center">netory</h1>
 </p>
 
@@ -82,6 +86,7 @@ This project is owned and maintained by [Ad Noctem Collective][org] refer to the
 
 ### ©️ Copyright
 
+- _Assets provided by:_ **[IconScout](https://iconscout.com)**
 - _Sources provided by:_ **[Ad Noctem Collective][org]** under the **[MIT License][license]**
 
 <!-- INTERNAL REFERENCES -->
