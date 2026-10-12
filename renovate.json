@@ -45,6 +45,24 @@
       "matchUpdateTypes": ["major"],
       "addLabels": ["breaking-change"],
       "description": "Major Go module bumps (an import-path-changing rename, or a breaking API redesign) need a manual look before merge, not just a passing build."
+    },
+    {
+      "matchDatasources": ["golang-version"],
+      "groupName": "go toolchain",
+      "description": "One pull request for both pins. A release that compiled with one Go version and declared another in go.mod is a release whose stamp lies about how it was built."
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "The Go SDK is pinned twice - go_sdk.download in MODULE.bazel, which is the toolchain the Bazel build compiles with, and the go directive in go.mod, which is what actions/setup-go reads. Only the second is a manager Renovate knows, so without this the Bazel pin would sit still while go.mod moved. They have to move together: scripts/bazel-create-status.sh stamps the version it reads from MODULE.bazel, and a govulncheck run against a toolchain one patch behind fails CI on standard-library advisories that a bump already fixed - which is how this manager came to exist.",
+      "managerFilePatterns": ["/^MODULE\\.bazel$/"],
+      "matchStrings": [
+        "go_sdk\\.download\\(version = \"(?<currentValue>[0-9.]+)\"\\)"
+      ],
+      "depNameTemplate": "go",
+      "datasourceTemplate": "golang-version",
+      "versioningTemplate": "npm"
     }
   ]
 }
