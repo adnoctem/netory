@@ -10,6 +10,30 @@ requests and a provider API.
 For scope, architecture and the reasoning behind the decisions, read
 [`docs/design/protean.md`](../../docs/design/protean.md). This file is how to run it.
 
+## Installation
+
+protean is one static executable with no runtime dependencies. Releases publish it for `linux` and
+`darwin`, each for `amd64` and `arm64`:
+
+```sh
+curl -fsSL https://github.com/adnoctem/netory/releases/latest/download/protean_linux_amd64.tar.gz \
+  | tar -xzf - protean
+sudo install -m 0755 protean /usr/local/bin/protean
+```
+
+To check it against the release's checksums before installing it:
+
+```sh
+base=https://github.com/adnoctem/netory/releases/latest/download
+curl -fsSLO "$base/protean_linux_amd64.tar.gz"
+curl -fsSL "$base/CHECKSUMS_SHA256.txt" | sha256sum -c --ignore-missing   # shasum -a 256 on macOS
+tar -xzf protean_linux_amd64.tar.gz protean
+```
+
+Replace `latest` with a tag such as `v0.1.0` to pin a release. Run the server on Linux; the macOS build is for `secret generate` and `version`. The container image is
+`ghcr.io/adnoctem/protean` — see [Container image](#container-image) — and building from source is
+`bazel build --config=release //cmd/protean`; see [`docs/CONTRIBUTING.md`](../../docs/CONTRIBUTING.md).
+
 ## Quick start
 
 ```sh

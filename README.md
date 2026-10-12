@@ -1,167 +1,117 @@
-# netory
+<p align="center">
+    <!-- netory -->
+    <h1 align="center">netory</h1>
+</p>
 
-Three self-hosted network services in one Bazel monorepo.
+[![License](https://img.shields.io/github/license/adnoctem/netory?label=License)][license]
+[![go.mod version](https://img.shields.io/github/go-mod/go-version/adnoctem/netory?logo=go)][go]
+[![Language](https://img.shields.io/github/languages/top/adnoctem/netory?label=Go&logo=go)][go]
+[![Testing](https://github.com/adnoctem/netory/actions/workflows/testing.yaml/badge.svg)][ci_testing_workflow]
+[![GitHub Release](https://img.shields.io/github/v/release/adnoctem/netory?label=Release)][github_releases]
+[![GitHub Activity](https://img.shields.io/github/commit-activity/m/adnoctem/netory?label=Commits)][github_commits]
+[![Bazel](https://img.shields.io/badge/Bazel-built-brightgreen?logo=bazel&logoColor=43A047)][bazel]
+[![Renovate](https://img.shields.io/badge/Renovate-enabled-brightgreen?logo=renovate&logoColor=1A1F6C)][renovate]
+[![PreCommit](https://img.shields.io/badge/PreCommit-enabled-brightgreen?logo=precommit&logoColor=FAB040)][precommit]
 
-| Service    | What it does                                                | State store | Status |
-| ---------- | ----------------------------------------------------------- | ----------- | ------ |
-| `protean`  | Self-hosted dynDNS control plane, DynDNS2-compatible        | Badger      | built  |
-| `signpost` | Public script router for the `curl … \| sh` install pattern | Badger      | built  |
-| `pivot`    | Transparent API proxy, Shopware 6 Admin API first           | Valkey      | built  |
+`netory` is an open-source [MIT][license]-licensed collection of three self-hosted network services written in
+[Go][go]. Each one is a single static executable with no runtime dependencies, published for Linux and macOS
+and as a container image. The project is built using Google's [Bazel][bazel] build system in combination with
+their first-party [Gazelle][gazelle] `BUILD` file generator.
 
-Each service has two documents. The design document in [`docs/design/`](docs/design/) is the source
-of truth for its scope and architecture; the README beside its entrypoint —
-[`cmd/protean/README.md`](cmd/protean/README.md), [`cmd/signpost/README.md`](cmd/signpost/README.md),
-[`cmd/pivot/README.md`](cmd/pivot/README.md) — is how to run it, and is where an operator should
-start. [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md) covers build order and the decisions shared
-across all three.
+## 📖 Overview
 
-Linux is the only supported server platform. The CLIs are also built for macOS, for the
-subcommands that need no server - `rules validate`, `bundle validate`, `secret generate`,
-`version`. No Windows binaries are shipped.
+Running your own dynamic DNS without handing your zone to yet another provider? [`protean`][protean] accepts
+DynDNS2 updates from the clients you already have - routers, ddclient, inadyn - and writes them to the DNS
+provider you already use. Serving `curl … | sh` installers? [`signpost`][signpost] publishes them as immutable,
+checksummed, optionally signed releases, over HTTPS only, with atomic rollback. Need to let customers into a
+production API without letting them reach all of it? [`pivot`][pivot] sits in front of it as a read-only proxy
+that issues their credentials, authenticates to the backend on their behalf, filters every request against path
+rules, and protects the backend with rate limits, a concurrency cap and a response cache.
 
-## Container images
+## ✨ TL;DR
 
-All three are published to `ghcr.io/adnoctem/<service>` on every release, as multi-architecture
-images covering `linux/amd64` and `linux/arm64`. They run as uid 65532 on a digest-pinned
-`distroless/static` base and contain the service binary, a CA bundle and nothing else — no shell, no
-package manager.
+```shell
+# Install one service - protean, signpost or pivot - for linux or darwin, amd64 or arm64
+curl -fsSL https://github.com/adnoctem/netory/releases/latest/download/pivot_linux_amd64.tar.gz \
+  | tar -xzf - pivot
+sudo install -m 0755 pivot /usr/local/bin/pivot
 
-```sh
-bazel run   --config=release //cmd/pivot:load      # load pivot:dev locally
-bazel build --config=release //cmd/pivot:image     # the multi-arch index, as an OCI layout
-bazel build --config=release //cmd/pivot:tarball   # docker-format tarball, for a registry-less cluster
+# Or all three at once
+curl -fsSL https://github.com/adnoctem/netory/releases/latest/download/netory_linux_amd64.tar.gz \
+  | sudo tar -xzf - -C /usr/local/bin protean signpost pivot
+
+# Or run the container image - multi-architecture, distroless, uid 65532
+docker run --rm ghcr.io/adnoctem/pivot:latest version
 ```
 
-`--config=release` is the configuration the published images are built in — the same one the
-released executables use, so the binary in the image is optimised and stripped rather than a debug
-build nearly twice the size.
+Prefer to check what you install first? Every release publishes a checksum file covering every tarball:
 
-[`scripts/bazel/image.bzl`](scripts/bazel/image.bzl) defines them, once, for all three. Each service README covers
-its own volumes, probes and a Kubernetes manifest.
-
-## Repository layout
-
-```text
-cmd/<service>/          thin entrypoints, plus the user-facing README for that service
-internal/<service>/     per-service application code
-pkg/                    shared across all three services
-  kv/                   store interface
-  kv/badgerkv/          Badger implementation (protean, signpost)
-  kv/valkeykv/          Valkey implementation (pivot)
-  kv/kvtest/            conformance suite every implementation must pass
-  secret/               <SERVICE>_SECRET validation + HKDF derivation
-  admin/                Unix-socket admin server, client and peer credentials
-  forwarded/            X-Forwarded-* parsing: client address and TLS state
-  event/                event bus with a persistent outbox, retries and claims
-  notify/               SMTP and HMAC-signed webhook notifiers
-  schema/               JSON Schema generated from the Go types that validate a document
-  seal/                 authenticated encryption for values stored elsewhere
-  backup/               sealed backups to the filesystem or S3
-  log/                  log/slog wrapper
-  stamp/                link-time build metadata
-tests/e2e/              container-backed end-to-end tests, behind the `e2e` tag
-docs/design/            per-service design documents
-docs/schema/            generated JSON Schema, consumed by editors and CI
-docs/examples/          configuration to copy; nothing here is installed by a service
-docs/AGENTS.md          repository rules for an agent; root AGENTS.md symlinks here
-docs/CONTRIBUTING.md    development workflow, dependency rules and the release procedure
-docs/IMPLEMENTATION.md  build order and the decisions shared across all three
-scripts/                release-create.sh builds the artifacts, bazel-create-status.sh
-                        the build stamps, bazel/ the container image macro
+```shell
+base=https://github.com/adnoctem/netory/releases/latest/download
+curl -fsSLO "$base/pivot_linux_amd64.tar.gz"
+curl -fsSL "$base/CHECKSUMS_SHA256.txt" | sha256sum -c --ignore-missing
+tar -xzf pivot_linux_amd64.tar.gz pivot
 ```
 
-## Building
+Linux is the only platform the services are supported on as servers. The macOS builds are for the subcommands
+that need no server - `rules validate`, `bundle validate`, `secret generate`, `version` - which is what runs on a
+laptop or in a CI job.
 
-The build is Bazel with Bzlmod only; Gazelle generates the `BUILD` files. Versions are pinned in
-`.bazelversion` and `MODULE.bazel`, and [bazelisk](https://github.com/bazelbuild/bazelisk) picks up
-the right Bazel automatically.
+## 🛠️ Services
 
-```sh
-bazel build //...                 # everything
-bazel test  //...                 # everything
-bazel test  //... --config=race   # with the race detector
-bazel run   //:gazelle            # regenerate BUILD files after adding or moving Go files
-```
+Like most modern [Go][go] projects the executables are located within the [cmd][cmd] directory, each with its
+own README documenting how to install, configure, run and operate it. Here's a quick-reference list as an
+overview:
 
-`--config=race` is not the default because rules_go's race instrumentation requires cgo, which the
-release configuration deliberately disables. CI runs both.
+- [`protean`][protean]: a self-hosted dynDNS control plane in front of Cloudflare, Route 53 or Spaceship
+- [`signpost`][signpost]: a public script router for the one-line install pattern, serving immutable releases
+- [`pivot`][pivot]: a transparent, read-only API proxy for letting customers into a production API safely
 
-Two test suites need more than the Bazel sandbox offers, and both skip themselves rather than fail
-when it is missing:
+The reasoning behind each one - its scope, its architecture and every decision that shaped it - is in its
+[design document][design].
 
-```sh
-# pivot's store, against a real Valkey. CI runs one as a service container.
-docker run --rm -d -p 6379:6379 valkey/valkey:9-alpine
-bazel test //... --config=race
+### 🔃 Contributing
 
-# The end-to-end tests: the real binaries, a Valkey from testcontainers, and a
-# backend. Outside Bazel, because they need a Docker socket and a Go toolchain.
-go test -tags e2e -timeout 10m ./tests/e2e/...
-```
+Refer to our [documentation for contributors][contributing] for building and testing, the repository layout,
+dependency rules, commit message formats and how a release is made.
 
-Release artifacts are built through the same script semantic-release uses, so the path is exercised
-on every pull request:
+### 📥 Maintainers
 
-```sh
-scripts/release-create.sh --version 0.2.0              # the whole set, under dist/
-scripts/release-create.sh --version 0.2.0 --dry-run    # build everything, write nothing
-scripts/release-create.sh --targets linux/amd64        # one target, stamped from git
-```
+This project is owned and maintained by [Ad Noctem Collective][org] refer to the [`AUTHORS`][authors] or
+[`CODEOWNERS`][owners] for more information. You may also use the linked contact details to reach out directly.
 
-Static, stripped, cgo-free, for `linux/{amd64,arm64}` and `darwin/{amd64,arm64}`: one tarball per
-service per target, one combined tarball per target, and a checksum file covering all of them. The
-script needs [libsh](https://github.com/adnoctem/libsh) on the machine — see
-[`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md).
+### ©️ Copyright
 
-No service uses cgo, and no C toolchain is registered for first-party code.
+- _Sources provided by:_ **[Ad Noctem Collective][org]** under the **[MIT License][license]**
 
-## Developing
+<!-- INTERNAL REFERENCES -->
 
-```sh
-pre-commit install
-pre-commit run --all-files
-```
+<!-- Project references -->
 
-Commits follow [Conventional Commits](https://www.conventionalcommits.org/) with the project as the
-scope — `feat(protean): …`, `fix(pkg/kv): …` — because semantic-release derives the version from
-them.
+[cmd]: cmd
+[protean]: cmd/protean
+[signpost]: cmd/signpost
+[pivot]: cmd/pivot
 
-[`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) is the full development workflow: the task table, the
-gotchas worth knowing before the first `bazel test`, the dependency rules, and how a release is
-made. [`AGENTS.md`](AGENTS.md) is the same ground condensed for an agent working in this repository,
-and [`docs/ACKNOWLEDGEMENTS.md`](docs/ACKNOWLEDGEMENTS.md) records where the conventions, formats
-and test vectors came from.
+<!-- File references -->
 
-## Releasing
+[license]: LICENSE
+[contributing]: docs/CONTRIBUTING.md
+[design]: docs/design
+[authors]: .github/AUTHORS
+[owners]: .github/CODEOWNERS
+[ci_testing_workflow]: https://github.com/adnoctem/netory/actions/workflows/testing.yaml
 
-Releasing is manual and gated. The Release workflow does nothing unless `NETORY_RELEASE_ENABLED` is
-`true` in the repository's Actions variables and somebody dispatches it; Testing dispatches it after
-a successful run on `main` or `next`, passing the commit it tested, and Release refuses to continue
-if the branch has advanced since. A release publishes the tarballs and checksums as GitHub release
-assets and the three images to GHCR, all stamped with the same version.
+<!-- General links -->
 
-netory is in 0.x: a breaking change takes the minor version, and the release script refuses
-anything that is not a plain `0.x.y`. The first release is a one-off `bootstrap` dispatch, because
-semantic-release with no tag to measure from would propose 1.0.0.
-[`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) has the procedure, including what to do when a
-release stops halfway.
+[org]: https://github.com/adnoctem
+[go]: https://go.dev
+[bazel]: https://bazel.build
+[gazelle]: https://github.com/bazelbuild/bazel-gazelle
+[github_releases]: https://github.com/adnoctem/netory/releases
+[github_commits]: https://github.com/adnoctem/netory/commits/main/
 
-## Secrets
+<!-- Third-party -->
 
-Each service takes exactly one high-entropy secret — `PROTEAN_SECRET`, `SIGNPOST_SECRET`,
-`PIVOT_SECRET` — delivered however the operator prefers: environment variable, file, systemd
-credential, container secret. Every key in use is derived from it with HKDF under a
-purpose-specific label, and the raw secret is never handed to a consumer.
-
-protean and signpost rely on Badger's encryption at rest for what they store. Valkey has no
-equivalent, so pivot encrypts credentials itself before writing them, through
-[`pkg/seal`](pkg/seal/seal.go) — and because its state is shared, **every pivot replica must be
-given the same secret**.
-
-Generate one with `<service> secret generate`. A secret shorter than 32 bytes after decoding is
-rejected; see [`pkg/secret`](pkg/secret/secret.go) for why that requirement is what makes the
-cheaper derivation safe.
-
-## Licence
-
-MIT. See [LICENSE](LICENSE).
+[renovate]: https://renovatebot.com/
+[precommit]: https://pre-commit.com/

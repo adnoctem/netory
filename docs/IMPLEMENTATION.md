@@ -160,4 +160,6 @@ to re-derive them per project:
   duplicate the design documents into it.
 - **The user-facing document for a service is `cmd/<service>/README.md`**, beside its entrypoint:
   how to run it, configure it, operate it and deploy it. The design document says why the service is
-  the way it is; the README says how to use it. The root `README.md` covers only what is shared.
+  the way it is; the README says how to use it. The root `README.md` is the overview and the
+  one-line install, for a user; everything a contributor or maintainer needs is in
+  `docs/CONTRIBUTING.md`.

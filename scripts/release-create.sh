@@ -154,33 +154,42 @@ function release_create::build() {
 #######################################
 # Package the staged binaries of one target: one tarball per service, and one with all of them,
 # each including the LICENSE and the README.
+#
+# The file names carry no version: <service>_<os>_<arch>.tar.gz and netory_<os>_<arch>.tar.gz.
+# The release tag is already in every download URL, and a name without one is what makes
+# .../releases/latest/download/pivot_linux_amd64.tar.gz a stable address - the one-line install
+# in the README depends on it. It is also the naming gopskit's releases use.
 # Arguments:
 #   1 - GOOS
 #   2 - GOARCH
-#   3 - the release version
-#   4 - staging directory
-#   5 - output directory
-#   6+ - service names
+#   3 - staging directory
+#   4 - output directory
+#   5+ - service names
 # Outputs:
 #   Progress messages.
 # Returns:
 #   0 on success, 1 if tar failed.
 #######################################
 function release_create::package() {
-	local os=$1 arch=$2 version=$3 staging=$4 output_dir=$5
-	shift 5
+	local os=$1 arch=$2 staging=$3 output_dir=$4
+	shift 4
 	local name
+
+	# Owned by root in the archive rather than by whoever ran the build. The README installs
+	# with `sudo tar -C /usr/local/bin`, and tar running as root restores the recorded owner -
+	# so without this, a binary in /usr/local/bin would belong to the CI runner's uid.
+	local -a ownership=(--owner=0 --group=0 --numeric-owner)
 
 	# One tarball per service, for operators who deploy a single one.
 	for name in "$@"; do
-		tar -czf "${output_dir}/${name}-${version}-${os}-${arch}.tar.gz" \
+		tar -czf "${output_dir}/${name}_${os}_${arch}.tar.gz" "${ownership[@]}" \
 			-C "${staging}" "${name}" \
 			-C "${ROOT_DIR}" LICENSE README.md || return 1
 	done
 
 	# And one combined tarball, since the three services share a monorepo and are commonly
 	# deployed together.
-	tar -czf "${output_dir}/netory-${version}-${os}-${arch}.tar.gz" \
+	tar -czf "${output_dir}/netory_${os}_${arch}.tar.gz" "${ownership[@]}" \
 		-C "${staging}" "$@" \
 		-C "${ROOT_DIR}" LICENSE README.md || return 1
 
@@ -249,7 +258,7 @@ function release_create::main() {
 
 		[[ ${dry_run} != 1 ]] || continue
 
-		release_create::package "${os}" "${arch}" "${version}" "${staging}" "${output_dir}" "${names[@]}" || {
+		release_create::package "${os}" "${arch}" "${staging}" "${output_dir}" "${names[@]}" || {
 			lib::log::print_error "Could not package the ${os}/${arch} tarballs"
 			return 1
 		}

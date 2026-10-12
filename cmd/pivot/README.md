@@ -17,6 +17,30 @@ no rule set can change that.
 For scope, architecture and the reasoning, read [`docs/design/pivot.md`](../../docs/design/pivot.md). This file
 is how to run it.
 
+## Installation
+
+pivot is one static executable with no runtime dependencies. Releases publish it for `linux` and
+`darwin`, each for `amd64` and `arm64`:
+
+```sh
+curl -fsSL https://github.com/adnoctem/netory/releases/latest/download/pivot_linux_amd64.tar.gz \
+  | tar -xzf - pivot
+sudo install -m 0755 pivot /usr/local/bin/pivot
+```
+
+To check it against the release's checksums before installing it:
+
+```sh
+base=https://github.com/adnoctem/netory/releases/latest/download
+curl -fsSLO "$base/pivot_linux_amd64.tar.gz"
+curl -fsSL "$base/CHECKSUMS_SHA256.txt" | sha256sum -c --ignore-missing   # shasum -a 256 on macOS
+tar -xzf pivot_linux_amd64.tar.gz pivot
+```
+
+Replace `latest` with a tag such as `v0.1.0` to pin a release. Run the server on Linux; the macOS build is for `rules validate`, which compiles a rule document exactly as a replica would, without a server. The container image is
+`ghcr.io/adnoctem/pivot` — see [Container image](#container-image) — and building from source is
+`bazel build --config=release //cmd/pivot`; see [`docs/CONTRIBUTING.md`](../../docs/CONTRIBUTING.md).
+
 ## Quick start
 
 ```sh

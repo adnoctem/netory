@@ -1,4 +1,4 @@
-# Contributing
+# Ad Noctem Collective - `netory` Repository Contributing Guidelines
 
 netory is three Go services - `protean`, `signpost`, `pivot` - in one Bazel/Bzlmod monorepo. Each
 has a design document in [`design/`](design/), which is the source of truth for its scope and
@@ -45,6 +45,37 @@ needs nothing but Bash, Git and coreutils.
 The Go version is declared once, in `MODULE.bazel`; `go.mod` carries the same one, and the status
 script reads it from `MODULE.bazel` so a stamped binary cannot report a toolchain that did not
 compile it.
+
+## Repository layout
+
+```text
+cmd/<service>/          thin entrypoints, plus the user-facing README for that service
+internal/<service>/     per-service application code
+pkg/                    shared across all three services
+  kv/                   store interface
+  kv/badgerkv/          Badger implementation (protean, signpost)
+  kv/valkeykv/          Valkey implementation (pivot)
+  kv/kvtest/            conformance suite every implementation must pass
+  secret/               <SERVICE>_SECRET validation + HKDF derivation
+  admin/                Unix-socket admin server, client and peer credentials
+  forwarded/            X-Forwarded-* parsing: client address and TLS state
+  event/                event bus with a persistent outbox, retries and claims
+  notify/               SMTP and HMAC-signed webhook notifiers
+  schema/               JSON Schema generated from the Go types that validate a document
+  seal/                 authenticated encryption for values stored elsewhere
+  backup/               sealed backups to the filesystem or S3
+  log/                  log/slog wrapper
+  stamp/                link-time build metadata
+tests/e2e/              container-backed end-to-end tests, behind the `e2e` tag
+scripts/                release-create.sh builds the release artifacts, bazel-create-status.sh
+                        the build stamps, bazel/ the container image macro
+docs/design/            per-service design documents
+docs/schema/            generated JSON Schema, consumed by editors and CI
+docs/examples/          configuration to copy; nothing here is installed by a service
+docs/AGENTS.md          repository rules for an agent; the root AGENTS.md symlinks here
+docs/IMPLEMENTATION.md  build order and the decisions shared across all three
+docs/ACKNOWLEDGEMENTS.md where the conventions, formats and test vectors came from
+```
 
 ## Daily workflow
 
@@ -142,6 +173,20 @@ document; the checks JSON Schema cannot express - a regex that has to compile, a
 across two arrays, a file that has to exist inside an archive - stay in Go, which is what
 `signpost bundle validate` and `pivot rules validate` run.
 
+## Secrets
+
+Each service takes exactly one high-entropy secret - `PROTEAN_SECRET`, `SIGNPOST_SECRET`,
+`PIVOT_SECRET` - and derives every key it uses from it with HKDF under a purpose-specific label, so
+one compromised key reveals nothing about another. The raw secret is never handed to a consumer and
+never used as a key itself. A secret shorter than 32 bytes after decoding is refused; see
+[`pkg/secret`](../pkg/secret/secret.go) for why that floor is what makes the cheaper derivation
+safe.
+
+protean and signpost rely on Badger's encryption at rest. Valkey has none, so pivot seals what it
+stores with [`pkg/seal`](../pkg/seal/seal.go) before writing it - which is also why every pivot
+replica must be given the same secret. Keep both properties when touching anything that stores a
+credential.
+
 ## Dependencies
 
 **Ask before adding any dependency no design document names.** This holds for Go modules and Bazel
@@ -180,7 +225,11 @@ an image is to debug something inside it.
 
 Semantic-release generates `CHANGELOG.md` from the commits; do not maintain it by hand. It decides
 the version and hands it to `scripts/release-create.sh`, which verifies it, builds one static
-executable per service per target, packages the tarballs and writes the checksums. The targets are
+executable per service per target, packages the tarballs and writes the checksums. Each target gets
+`<service>_<os>_<arch>.tar.gz` and `netory_<os>_<arch>.tar.gz`, with root-owned entries and no
+version in the name: the tag is already in every download URL, and leaving it out of the file name
+is what makes `releases/latest/download/pivot_linux_amd64.tar.gz` a stable address for the
+README's one-line install. The targets are
 `linux/{amd64,arm64}` and `darwin/{amd64,arm64}`: Linux is the only platform the services are
 supported on as servers, and the macOS builds are for the subcommands that need no server -
 `rules validate`, `bundle validate`, `secret generate`, `version`. None of that needs a macOS SDK,

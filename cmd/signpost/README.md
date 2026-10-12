@@ -11,6 +11,30 @@ protection and HTTPS-only serving all follow from that one fact.
 For scope, architecture and the reasoning, read [`docs/design/signpost.md`](../../docs/design/signpost.md).
 This file is how to run it.
 
+## Installation
+
+signpost is one static executable with no runtime dependencies. Releases publish it for `linux` and
+`darwin`, each for `amd64` and `arm64`:
+
+```sh
+curl -fsSL https://github.com/adnoctem/netory/releases/latest/download/signpost_linux_amd64.tar.gz \
+  | tar -xzf - signpost
+sudo install -m 0755 signpost /usr/local/bin/signpost
+```
+
+To check it against the release's checksums before installing it:
+
+```sh
+base=https://github.com/adnoctem/netory/releases/latest/download
+curl -fsSLO "$base/signpost_linux_amd64.tar.gz"
+curl -fsSL "$base/CHECKSUMS_SHA256.txt" | sha256sum -c --ignore-missing   # shasum -a 256 on macOS
+tar -xzf signpost_linux_amd64.tar.gz signpost
+```
+
+Replace `latest` with a tag such as `v0.1.0` to pin a release. Run the server on Linux; the macOS build is for `bundle validate`, which checks a bundle exactly as a publish would, without a server. The container image is
+`ghcr.io/adnoctem/signpost` — see [Container image](#container-image) — and building from source is
+`bazel build --config=release //cmd/signpost`; see [`docs/CONTRIBUTING.md`](../../docs/CONTRIBUTING.md).
+
 ## Quick start
 
 ```sh
