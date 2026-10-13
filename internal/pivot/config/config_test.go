@@ -50,7 +50,7 @@ func TestValidate(t *testing.T) {
 
 // A backend URL carrying a path would be prepended to the path the rules
 // matched, so pivot and the backend's router would see different requests -
-// which is the one property §2 exists to protect.
+// which is the one property normalization exists to protect.
 func TestParseBackendURL(t *testing.T) {
 	t.Parallel()
 

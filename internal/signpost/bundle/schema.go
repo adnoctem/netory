@@ -24,8 +24,7 @@ const SchemaDialect = schema.Dialect
 
 // Schema returns the manifest's JSON Schema, generated from the Go types.
 //
-// Generated rather than written, and that is the resolution of §9.1 rather
-// than an implementation detail of it. The Go validation in this file is what
+// Generated rather than written. The Go validation in this file is what
 // actually runs at publish time, so a schema maintained beside it would be a
 // second description of the same thing, free to drift the moment someone adds
 // a field. Deriving it means the property names, their types and which ones

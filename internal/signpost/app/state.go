@@ -75,7 +75,7 @@ type State struct {
 	// Store is the encrypted Badger database.
 	Store *badgerkv.Store
 
-	// Content holds the served bytes (§5.1).
+	// Content holds the served bytes.
 	Content Storage
 
 	// Repositories, each bound to its own namespace.
@@ -496,8 +496,8 @@ func (s *State) LogStartup(ctx context.Context) {
 		"routes", table.Len(),
 		"releases", len(table.Releases()))
 
-	// The one configuration mistake that silently breaks the guarantee in
-	// §6.2: plain HTTP with no trusted proxies means signpost cannot confirm
+	// The one configuration mistake that silently breaks the HTTPS-only
+	// guarantee: plain HTTP with no trusted proxies means signpost cannot confirm
 	// any request arrived over TLS, so it will refuse to serve every script.
 	// Said at warn at startup rather than discovered as a wall of 421s.
 	if s.Config.ProxyMode() && len(s.Config.TrustedProxies) == 0 {

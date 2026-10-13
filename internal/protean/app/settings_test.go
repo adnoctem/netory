@@ -157,10 +157,10 @@ func TestSettingsSetValidates(t *testing.T) {
 // than left to drift.
 func TestAddressRetentionDefaultIsNinetyDays(t *testing.T) {
 	assert.Equal(t, 90*24*time.Hour, app.DefaultAddressRetention,
-		"the shipped retention default is documented in protean section 10.6")
+		"the shipped retention default is the documented 90 days")
 }
 
-// The event taxonomy must match the design document's section 8.1.
+// The event taxonomy must match the one docs/ARCHITECTURE.md documents.
 func TestEventTaxonomy(t *testing.T) {
 	asrt := assert.New(t)
 
@@ -178,7 +178,7 @@ func TestEventTaxonomy(t *testing.T) {
 		"token.created",
 		"token.revoked",
 		"provider.failed",
-	}, names, "the taxonomy must match protean section 8.1")
+	}, names, "the taxonomy must match the documented one")
 }
 
 func TestEventBuilders(t *testing.T) {

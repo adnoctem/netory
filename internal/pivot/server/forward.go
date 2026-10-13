@@ -40,13 +40,13 @@ var hopHeaders = []string{
 // Authorization above all: the client authenticated to pivot, and the forward
 // leg carries pivot's own credentials instead. Forwarding the customer's would
 // let it try to authenticate to the backend directly, which is the one thing
-// §2's "credentials never leave pivot" is about - in the other direction.
+// "credentials never leave pivot" is about - in the other direction.
 var clientHeaders = []string{
 	"Authorization",
 	"Cookie",
 }
 
-// serve runs §4's stages six to ten: cache lookup, coalesce, concurrency
+// serve runs the pipeline's later stages: cache lookup, coalesce, concurrency
 // limit, forward, then store and respond.
 func (s *Server) serve(
 	ctx context.Context,
@@ -176,8 +176,8 @@ func (s *Server) callBackend(
 	path string,
 	body []byte,
 ) (*backendResponse, error) {
-	// Stage 8: the concurrency limit. §7.1 calls this the mechanism that
-	// actually protects production.
+	// The concurrency limit: the mechanism that actually protects
+	// production.
 	release, err := s.concurrency.Acquire(ctx)
 	if err != nil {
 		return nil, err
@@ -508,11 +508,11 @@ func (s *Server) writeEntry(w http.ResponseWriter, entry cache.Entry, cacheStatu
 	_, _ = w.Write(entry.Body)
 }
 
-// handleToken answers pivot's own token endpoint (§6.1).
+// handleToken answers pivot's own token endpoint.
 //
 // The shapes are RFC 6749's, which is also what Shopware returns, so a client
 // that parsed the backend's token response parses pivot's unchanged - that is
-// what §2 means by transparent.
+// what transparent means here.
 func (s *Server) handleToken(w http.ResponseWriter, r *http.Request, settings app.Settings) int {
 	ctx := r.Context()
 

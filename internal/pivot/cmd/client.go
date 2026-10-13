@@ -12,7 +12,7 @@ import (
 
 // newClientCommand builds `pivot client`.
 //
-// More verbs than §3.1's add|list|remove, and each addition earns its place:
+// More than add|list|remove, and each verb earns its place:
 // a customer's credentials need rotating, a customer needs suspending without
 // being deleted, and a customer's backend credentials and rate limit both
 // change independently of the rest of the record.

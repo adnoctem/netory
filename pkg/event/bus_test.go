@@ -226,7 +226,7 @@ func TestOneFailingSinkRetainsTheEventForAll(t *testing.T) {
 }
 
 // Deduplication is what stops a flapping connection sending one mail per
-// address change (protean section 8.2).
+// address change.
 func TestDeduplicationCollapsesAFlappingHost(t *testing.T) {
 	asrt := assert.New(t)
 	ctx := context.Background()

@@ -1,7 +1,7 @@
 // Package cmd is signpost's Cobra command tree.
 //
 // Commands follow Git-style noun then verb ordering - `signpost bundle
-// publish`, not `signpost publish-bundle` - as §3.1 specifies.
+// publish`, not `signpost publish-bundle`.
 //
 // # Two kinds of command
 //

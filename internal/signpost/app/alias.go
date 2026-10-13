@@ -31,7 +31,7 @@ var aliasName = regexp.MustCompile(`^[A-Za-z0-9._-]+$`)
 
 // Alias points at one release.
 //
-// Publishing and rollback are atomic alias swaps (§2), which is what
+// Publishing and rollback are atomic alias swaps, which is what
 // guarantees a client never observes a half-published state: the release and
 // all its content exist before any alias names them, so an alias only ever
 // points at something complete.
@@ -115,7 +115,7 @@ func (a *Aliases) Get(ctx context.Context, name string) (Alias, error) {
 
 // Set points an alias at a release, atomically.
 //
-// This is the swap §2 calls atomic, and the atomicity is real rather than
+// This is the atomic alias swap, and the atomicity is real rather than
 // asserted. The write is a compare-and-swap against the bytes the alias held
 // when it was read, so two publishes racing to move the same alias cannot
 // interleave into a state neither of them intended - the loser is told the

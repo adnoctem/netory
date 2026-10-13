@@ -141,8 +141,8 @@ func TestIsTrustedProxy(t *testing.T) {
 	asrt.False(cfg.IsTrustedProxy(netip.MustParseAddr("203.0.113.1")))
 
 	// An IPv4-mapped IPv6 address must match an IPv4 prefix, or a proxy
-	// configured as 10.0.0.0/8 would not match a connection Go reports as
-	// ::ffff:10.0.0.1.
+	// configured as 10.0.0.0/8 would not match a connection Go reports as:
+	// :ffff:10.0.0.1.
 	asrt.True(cfg.IsTrustedProxy(netip.MustParseAddr("::ffff:10.0.0.1")))
 
 	asrt.False(cfg.IsTrustedProxy(netip.Addr{}), "the zero address is never trusted")

@@ -68,13 +68,14 @@ overview:
 - [`signpost`][signpost]: a public script router for the one-line install pattern, serving immutable releases
 - [`pivot`][pivot]: a transparent, read-only API proxy for letting customers into a production API safely
 
-The reasoning behind each one - its scope, its architecture and every decision that shaped it - is in its
-[design document][design].
+How each one works, what the three share and where their limits are is described in the
+[Architecture][architecture].
 
 ### 🔃 Contributing
 
 Refer to our [documentation for contributors][contributing] for building and testing, the repository layout,
-dependency rules, commit message formats and how a release is made.
+dependency rules, commit message formats and how a release is made. Participation follows the
+[Code of Conduct][conduct]; report vulnerabilities privately as described in the [Security Policy][security].
 
 ### 📥 Maintainers
 
@@ -99,7 +100,9 @@ This project is owned and maintained by [Ad Noctem Collective][org] refer to the
 
 [license]: LICENSE
 [contributing]: docs/CONTRIBUTING.md
-[design]: docs/design
+[architecture]: docs/ARCHITECTURE.md
+[conduct]: docs/CODE_OF_CONDUCT.md
+[security]: docs/SECURITY.md
 [authors]: .github/AUTHORS
 [owners]: .github/CODEOWNERS
 [ci_testing_workflow]: https://github.com/adnoctem/netory/actions/workflows/testing.yaml

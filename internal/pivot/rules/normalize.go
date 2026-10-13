@@ -3,7 +3,7 @@
 //
 // # Why normalization lives here
 //
-// §2 states the property the whole layer rests on: pivot canonicalizes a path
+// The property the whole layer rests on: pivot canonicalizes a path
 // before matching and forwards the canonical form, so pivot and the backend's
 // router always see the same request. A rule is only as strong as the path it
 // matched, and any difference between the path pivot judged and the path the
@@ -56,7 +56,7 @@ var (
 	//
 	// Refused because some routers and some filesystems treat it as a
 	// separator and pivot does not, which is exactly the kind of disagreement
-	// §2 exists to remove.
+	// normalization exists to remove.
 	ErrPathBackslash = errors.New("rules: path contains a backslash")
 )
 
@@ -190,17 +190,16 @@ func isUnreserved(c byte) bool {
 // Written here rather than taken from path.Clean, which absorbs a ".." that
 // climbs above the root where pivot must refuse the request outright.
 //
-// Dropping the trailing slash is a normalization step §5.1 does not list, and
-// it is there because the alternative is worse. Keeping it would leave two
+// The trailing slash is dropped because the alternative is worse. Keeping it would leave two
 // spellings of one route - "/api/product" and "/api/product/" - which is the
-// ambiguity §2 exists to remove, and the matcher would then have to decide
+// ambiguity normalization exists to remove, and the matcher would then have to decide
 // whether a rule for one covers the other. Either answer is a trap: covering
 // it widens every allow rule by a path its author did not write, and not
 // covering it answers 403 to a client whose URL differs by one character for
 // reasons nothing in the response explains.
 //
 // Collapsing instead gives exactly one string per route, before any rule sees
-// it, and the forwarded path is still the matched path - so §2 holds. The
+// it, and the forwarded path is still the matched path. The
 // trade is a backend that genuinely routes "/x" and "/x/" to different
 // handlers, which pivot cannot then distinguish; that is rare, it fails
 // towards the canonical form rather than towards more access, and the

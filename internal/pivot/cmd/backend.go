@@ -12,8 +12,7 @@ import (
 
 // newBackendCommand builds `pivot backend`.
 //
-// §3.1 drafted this as add|list|remove|test, which assumed backends were a
-// collection. They are not: pivot fronts exactly one backend origin, and the
+// Backends are not a collection: pivot fronts exactly one backend origin, and the
 // per-customer part is a credential that belongs to a client record. So the
 // verbs are show|set|test, and per-client credentials live under `client
 // backend` where the thing they belong to is.
@@ -22,7 +21,7 @@ func newBackendCommand(opts *Options) *cobra.Command {
 		Use:   "backend",
 		Short: "Inspect and set the backend pivot forwards to",
 		Long: "pivot fronts one backend origin. The credentials are per customer and live on the\n" +
-			"client record - see `pivot client backend` - because §6.2 requires each customer's\n" +
+			"client record - see `pivot client backend` - because each customer's\n" +
 			"requests to reach the backend as that customer's own integration, with that\n" +
 			"integration's permissions.\n\n" +
 			"That is the second of the two layers: pivot's rules bound which paths a customer can\n" +

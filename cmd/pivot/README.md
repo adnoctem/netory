@@ -14,8 +14,8 @@ that customer's own backend credentials are the second. Neither is trusted to be
 **pivot is read-only by construction.** It forwards `GET`, `HEAD` and `POST` and nothing else, and
 no rule set can change that.
 
-For scope, architecture and the reasoning, read [`docs/design/pivot.md`](../../docs/design/pivot.md). This file
-is how to run it.
+How pivot works internally - the request pipeline, path rules, replicas and its known limitations - is
+described in the [Architecture](../../docs/ARCHITECTURE.md#pivot). This file is how to run it.
 
 ## Installation
 
@@ -184,9 +184,9 @@ write.
 ### Example rule sets
 
 **pivot ships no rule set and installs nothing.** A fresh instance denies everything and reports
-itself not ready until an operator applies a document. What used to be a `--preset` is now a file in
-this repository, because a rule set is a statement about what one installation will serve, and one
-compiled into the binary is a statement nobody reviewed that a single command applies.
+itself not ready until an operator applies a document. A rule set is a statement about what one
+installation will serve, so the examples here are files to read and adapt, not something pivot applies
+by itself.
 
 | Example                                                                      | What it is                                                             |
 | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
@@ -202,14 +202,17 @@ pivot rules apply ./shopware-readonly.yaml
 pivot rules apply --deny-all
 ```
 
+A rule set with no allow rules - including `--deny-all` - makes every replica report itself not ready
+on `/readyz`, so a load balancer stops routing to them rather than letting customers receive a 403 for
+every request.
+
 Read the denials before trusting the Shopware example. They are judgements about one installation's
 data, and yours may hold personal data behind a path the example allows. Shopware is the reference
 backend rather than the point — nothing in pivot itself knows what Shopware is, and the `api-key`
 and `http-basic` backend modes exist for backends that are not it.
 
 Both examples are compiled by pivot's own test suite, and the Shopware one is applied by the
-end-to-end suite against a backend speaking the Admin API's shapes, so neither can rot into
-something that no longer loads.
+end-to-end suite against a backend speaking the Admin API's shapes.
 
 ### Per-customer rules
 
@@ -736,8 +739,8 @@ kubectl exec deploy/pivot -- /pivot rules test /api/product --client acme
 - **One client's broken rules do not break the others.** That client falls back to the global set,
   which is the restrictive direction, and the log says so.
 - **`secret rotate` is not implemented.** To rotate by hand: stop every replica, start them with the
-  new secret, and re-enter the backend credentials with `pivot client backend`. The client ids,
-  secrets and rules survive; only the encrypted values need replacing.
+  new secret, re-enter the backend credentials with `pivot client backend`, and remove and re-add
+  each notifier. The client ids, secrets and rules survive; only the encrypted values need replacing.
 
 Linux is the only platform pivot is supported as a server on. macOS binaries ship as well,
 for the subcommands that need no server - `pivot rules validate`, `pivot secret generate` and `pivot version` - which is

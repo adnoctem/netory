@@ -3,7 +3,7 @@
 // runtime, and a base set of attributes.
 //
 // It deliberately adds no dependency. All three services write structured
-// audit records (protean section 9.2, signpost section 8.1, pivot section 9.2),
+// audit records,
 // and slog's attribute model covers that natively, so there is nothing a
 // third-party logger would buy here.
 package log

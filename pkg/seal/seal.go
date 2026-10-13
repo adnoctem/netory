@@ -182,7 +182,7 @@ func (s *Sealer) header(flags uint8, nonce []byte) []byte {
 // The second result reports whether the value was sealed, which a caller may
 // want to check: pivot refuses to serve a cached entry that should have been
 // encrypted and was not, because the flag having been off is exactly the
-// misconfiguration §7.3 warns about.
+// misconfiguration the flag exists to prevent.
 func (s *Sealer) Open(stored []byte) (plaintext []byte, wasSealed bool, err error) {
 	if len(stored) < HeaderLen {
 		return nil, false, ErrNotSealed

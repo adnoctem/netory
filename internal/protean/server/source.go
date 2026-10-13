@@ -72,7 +72,7 @@ const (
 // Encryption reports whether a request arrived over TLS.
 //
 // This matters because the DynDNS2 endpoint authenticates with HTTP Basic,
-// which sends the token on every single request (section 6.2). A token on a
+// which sends the token on every single request. A token on a
 // plaintext hop is a disclosed token, and the client will keep sending it every
 // five minutes.
 func (s *SourceResolver) Encryption(r *http.Request) EncryptionState {

@@ -14,9 +14,8 @@ const maxLoggedUserAgent = 200
 
 // access writes one access-log record.
 //
-// The record goes to the structured log rather than to the database, and that
-// is the resolution of §9.7: a retention period signpost cannot enforce is
-// not a promise worth making, because the record leaves this process the
+// The record goes to the structured log rather than to the database: a
+// retention period signpost cannot enforce is not a promise worth making, because the record leaves this process the
 // moment it is written and its lifetime belongs to the operator's log
 // pipeline. What signpost does own is how much personal data enters the record
 // in the first place, which is the accesslog.client_address setting - data
@@ -60,7 +59,7 @@ func (s *Server) access(
 	}
 
 	// Info rather than debug: for a service whose whole job is serving
-	// executable content, who fetched what is the record §8.1 asks for, not
+	// executable content, who fetched what is an audit record, not
 	// diagnostic noise.
 	s.log.Info("served", attrs...)
 }

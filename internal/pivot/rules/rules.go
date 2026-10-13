@@ -12,8 +12,8 @@ import (
 // Methods pivot will forward, and the reason there is a fixed list.
 //
 // pivot is a read-only perimeter guard: no customer will ever have write
-// access through it, which is the premise the whole rules model rests on
-// (§10.1). A fixed method set is how that becomes a property of the code
+// access through it, which is the premise the whole rules model rests on.
+// A fixed method set is how that becomes a property of the code
 // rather than a property of whichever rule set happens to be loaded. PUT,
 // PATCH and DELETE are refused before the rules are consulted and no rule can
 // name them, so a misconfigured allow list cannot grant a write.
@@ -73,13 +73,13 @@ type Rule struct {
 	Comment string `json:"comment,omitempty" yaml:"comment,omitempty"`
 }
 
-// Cache is a route's caching configuration (§7.2, §7.3).
+// Cache is a route's caching configuration.
 type Cache struct {
 	// TTL is how long a response may be cached. Zero means not cacheable.
 	TTL time.Duration `json:"ttl" yaml:"ttl"`
 
 	// Encrypt seals the cached body with a key derived from the service
-	// secret. Off by default, and §7.3 is explicit that the default is the
+	// secret. Off by default, and the default is the
 	// unsafe direction for anything touching personal data - pivot cannot
 	// work out from a path whether a response carries it.
 	Encrypt bool `json:"encrypt,omitempty" yaml:"encrypt,omitempty"`
@@ -368,7 +368,7 @@ func compileRoute(route Route) (*compiledRoute, error) {
 
 // compileRegex anchors and compiles a pattern.
 //
-// Anchored automatically, as §5.2 specifies: an unanchored pattern matches a
+// Anchored automatically: an unanchored pattern matches a
 // substring, so "/api/product" would match "/api/product/../../admin" before
 // normalization and "/evil/api/product" after. Anchoring is not a convenience
 // here, it is the difference between a rule that means what it says and one
@@ -469,7 +469,7 @@ func isWriteMethod(method string) bool {
 // IsForwardable reports whether pivot will forward a method at all.
 //
 // Consulted by the pipeline before the rules, so a write is refused whatever
-// the loaded rule set says. That ordering is what makes §10.1's "never" a
-// property of the code: there is no rule set, global or per-client, that can
+// the loaded rule set says. That ordering is what makes "pivot never forwards a
+// write" a property of the code: there is no rule set, global or per-client, that can
 // put a PUT through.
 func IsForwardable(method string) bool { return isForwardable(strings.ToUpper(method)) }

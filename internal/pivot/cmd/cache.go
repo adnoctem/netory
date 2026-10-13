@@ -8,7 +8,7 @@ import (
 
 // newCacheCommand builds `pivot cache`.
 //
-// Not in §3.1's tree either. It is here because an operator who has just
+// An operator who has just
 // narrowed a rule, or fixed a route wrongly marked shared, needs a way to stop
 // the cache serving what it cached under the old configuration - and the
 // alternative is waiting out a TTL that may be hours.

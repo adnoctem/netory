@@ -7,7 +7,7 @@ import (
 	"github.com/adnoctem/netory/pkg/event"
 )
 
-// signpost's event taxonomy, as §7.2 defines it.
+// signpost's event taxonomy, as docs/ARCHITECTURE.md documents it.
 //
 // Four events, all of them about the integrity of what is being served. There
 // is deliberately no event for a served request: signpost serves anonymously
@@ -32,7 +32,7 @@ const (
 )
 
 // EventTypes lists every event signpost emits, for `notifier` documentation
-// and for the test that asserts the taxonomy matches the design document.
+// and for the test that asserts the taxonomy matches the documented one.
 func EventTypes() []event.Type {
 	return []event.Type{
 		EventBundlePublished,
@@ -44,8 +44,8 @@ func EventTypes() []event.Type {
 
 // BundlePublished builds the event for a new release.
 //
-// The archive digest and the signature status are both carried, because §8.1
-// requires the audit trail to name them and a notification an operator reads
+// The archive digest and the signature status are both carried, because the
+// audit trail names them and a notification an operator reads
 // is the most likely place that record is actually looked at.
 func BundlePublished(release Release) event.Event {
 	e := event.New(EventBundlePublished, release.Release, "a new release was published").
@@ -56,7 +56,7 @@ func BundlePublished(release Release) event.Event {
 
 	if len(release.TruncationSkipped) > 0 {
 		// Surfaced in the notification rather than only stored: a route that
-		// opted out of the §6.3 check is the one route in the bundle whose
+		// opted out of the truncation check is the one route in the bundle whose
 		// partial delivery could execute, and that is worth saying out loud
 		// at the moment it is published.
 		e = e.WithField("truncation_check_skipped", strings.Join(release.TruncationSkipped, " "))

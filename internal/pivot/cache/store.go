@@ -69,7 +69,7 @@ func (s *Store) CanEncrypt() bool { return s.codec.CanEncrypt() }
 // request can still be served from the backend, and failing it would turn a
 // cache problem into an outage.
 //
-// requireEncryption comes from the route's §7.3 flag.
+// requireEncryption comes from the route's encrypt flag.
 func (s *Store) Get(ctx context.Context, key Key, requireEncryption bool) (Entry, bool, error) {
 	stored, err := s.handle.Get(ctx, key.String())
 	if err != nil {
@@ -130,7 +130,7 @@ func (s *Store) Delete(ctx context.Context, key Key) error {
 
 // Purge removes every cached entry.
 //
-// This walks the namespace, which §8.2 warns is a full keyspace scan on
+// This walks the namespace, which is a full keyspace scan on
 // Valkey, so it belongs on an administrative path and nowhere near a request.
 // It exists because an operator who has just narrowed a rule or fixed a
 // shared-route mistake needs a way to make the cache stop serving what it

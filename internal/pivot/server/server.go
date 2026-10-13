@@ -2,8 +2,8 @@
 // them.
 //
 // The split is the security model. The proxy listener faces customers and is
-// read-only by construction: §10.1 settled that no customer will ever have
-// write access, so the forwardable method set is fixed in code and no rule set
+// read-only by construction: no customer ever has write access, so the
+// forwardable method set is fixed in code and no rule set
 // can widen it. The admin listener is a Unix domain socket whose file
 // permissions are the authorization, and because all state is in Valkey, a
 // change made through one replica's socket applies to every replica.
@@ -67,11 +67,11 @@ type Server struct {
 	log       *log.Logger
 	forwarded *forwarded.Resolver
 
-	// concurrency and coalescer are per replica, as §7.1 specifies.
+	// concurrency and coalescer are per replica.
 	concurrency *Concurrency
 	coalescer   *Coalescer
 
-	// aggregator collects the denials, refusals and failures that §8.3 wants
+	// aggregator collects the denials, refusals and failures that are
 	// reported as aggregates rather than per request.
 	aggregator *Aggregator
 

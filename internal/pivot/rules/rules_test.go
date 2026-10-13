@@ -145,7 +145,7 @@ rules:
 	asrt.False(set.Evaluate("GET", "/api/product/extra").Allowed())
 }
 
-// §10.1: no customer will ever have write access, so the method set is fixed
+// No customer ever has write access, so the method set is fixed
 // in code and no rule set can widen it.
 func TestWriteMethodsAreRefusedStructurally(t *testing.T) {
 	t.Parallel()
@@ -264,7 +264,7 @@ rules:
 	assert.True(t, rules.EmptySet().Empty())
 }
 
-// §10.2's model: a client's rules add to the global ones and can never reopen
+// Accumulation: a client's rules add to the global ones and can never reopen
 // a path the global set denies.
 func TestMergeIsAccumulativeAndGlobalDenyWins(t *testing.T) {
 	t.Parallel()
@@ -392,8 +392,7 @@ routes:
 	asrt.Equal(time.Minute, order.TTL)
 	asrt.True(order.Encrypt)
 
-	// A path no route covers is not cacheable, which is the default §7.2
-	// specifies: only routes explicitly marked cacheable are cached.
+	// A path no route covers is not cacheable: only routes explicitly marked cacheable are cached.
 	_, ok = set.CacheFor("POST", "/api/search/manufacturer")
 	asrt.False(ok)
 	asrt.Zero(set.CacheTTL("POST", "/api/search/manufacturer"))
@@ -515,7 +514,7 @@ func TestExampleDocumentsCompile(t *testing.T) {
 // The Shopware example is the rule set an operator is most likely to apply
 // without reading all of it, so its headline properties are asserted rather
 // than assumed. It is also the document the end-to-end suite applies against a
-// backend speaking the Admin API's shapes, which is what §10.6 rests on.
+// backend speaking the Admin API's shapes.
 func TestShopwareExampleBehaviour(t *testing.T) {
 	t.Parallel()
 

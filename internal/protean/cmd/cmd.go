@@ -1,7 +1,7 @@
 // Package cmd is protean's Cobra command tree.
 //
 // Commands follow Git-style noun then verb ordering - `protean host add`, not
-// `protean add-host` - as section 4.2 specifies.
+// `protean add-host`.
 //
 // # Two kinds of command
 //

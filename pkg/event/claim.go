@@ -21,9 +21,7 @@ const DefaultLease = 2 * time.Minute
 
 // Claim is one replica's lease on an outbox entry.
 //
-// This is what §10.4 of pivot's design document asked for, built on
-// kv.CompareAndSwap exactly as §8.2 predicted it could be. The lease is the
-// part the prediction flagged as missing: a claim without one gives no way to
+// Built on kv.CompareAndSwap, with a lease: a claim without one gives no way to
 // recover an entry whose holder died, so the entry would sit claimed forever
 // and its notification would never be sent - the failure a persistent outbox
 // exists to prevent.

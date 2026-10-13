@@ -79,7 +79,7 @@ func TestABrokenRuleSetIsNeverStored(t *testing.T) {
 	assert.Equal(t, good, stored)
 }
 
-// §10.2's accumulation, through the stored records rather than in memory: a
+// Accumulation of global and client rules, through the stored records rather than in memory: a
 // client's own rules add to the global ones and cannot reopen a global deny.
 func TestPerClientRulesAccumulate(t *testing.T) {
 	ctx := context.Background()
@@ -165,7 +165,7 @@ func TestOneBrokenClientDoesNotBreakTheTable(t *testing.T) {
 	assert.False(t, table.For("bad-client").Evaluate("GET", "/api/other").Allowed())
 }
 
-// §10.3: a change made through one replica reaches the others. This is the
+// A change made through one replica reaches the others. This is the
 // whole hot-reload property, with two States standing in for two replicas over
 // one Valkey.
 func TestAChangeOnOneReplicaReachesAnother(t *testing.T) {

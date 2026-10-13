@@ -379,7 +379,7 @@ func TestForwardsAnAllowedRequest(t *testing.T) {
 	asrt.Equal("limit=5", forwarded.Query)
 }
 
-// §2: the customer's credentials never reach the backend, and pivot's own go
+// The customer's credentials never reach the backend, and pivot's own go
 // on instead. This is the property the whole two-layer model rests on.
 func TestTheClientsCredentialsNeverReachTheBackend(t *testing.T) {
 	h := newHarness(t)
@@ -428,7 +428,7 @@ func TestClientSuppliedHeadersAreStripped(t *testing.T) {
 		"a method-override header must not change the forwarded method")
 }
 
-// §10.1: no rule set can grant a write, and the check happens before the
+// No rule set can grant a write, and the check happens before the
 // rules are consulted.
 func TestWriteMethodsAreRefused(t *testing.T) {
 	h := newHarness(t)
@@ -540,8 +540,8 @@ func TestPlaintextIsRefused(t *testing.T) {
 	h.server.ProxyHandler().ServeHTTP(recorder, req)
 
 	// Refused only when pivot can tell. With no trusted proxies configured
-	// the transport is Unknown rather than Plaintext, which §10.7 says is the
-	// expected proxy deployment - so this harness, which declares none, lets
+	// the transport is Unknown rather than Plaintext, which is the expected
+	// proxy deployment - so this harness, which declares none, lets
 	// it through and the startup log carries the warning instead.
 	assert.Equal(t, http.StatusOK, recorder.Code,
 		"with no trusted proxies declared pivot cannot tell, and says so at startup instead")
@@ -622,7 +622,7 @@ func TestALargeResponseStreams(t *testing.T) {
 		"an uncacheable route must not be bounded by the cache buffer")
 }
 
-// §7.2 requires the backend's own caching directives to be honoured.
+// The backend's own caching directives are honoured.
 func TestCacheControlIsHonoured(t *testing.T) {
 	h := newHarness(t)
 
@@ -665,7 +665,7 @@ func TestRateLimit(t *testing.T) {
 	asrt := assert.New(t)
 	asrt.Equal(http.StatusTooManyRequests, refused.Code)
 	asrt.Equal("0", refused.Header().Get("X-RateLimit-Remaining"))
-	asrt.NotEmpty(refused.Header().Get("Retry-After"), "§4 requires a 429 to say when to retry")
+	asrt.NotEmpty(refused.Header().Get("Retry-After"), "a 429 must say when to retry")
 	asrt.Equal(int64(2), h.backend.calls.Load(),
 		"a rate-limited request must never cost a backend call")
 }
@@ -817,7 +817,7 @@ func newHarnessWithProxies(t *testing.T, cidr string) *harness {
 	})
 }
 
-// §10.8's split, asserted: a refused request leaves a log line every time and
+// The audit split, asserted: a refused request leaves a log line every time and
 // a stored audit record only once the refusals look like an incident. A record
 // per attempt would be the volume the split exists to avoid - a client
 // retrying a denied path in a loop would write a ninety-day record each time.

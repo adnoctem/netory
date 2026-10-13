@@ -187,7 +187,7 @@ func TestPublishBundle(t *testing.T) {
 	asrt.Contains(string(content), "echo one")
 }
 
-// A release is immutable (§2), so publishing the same identifier twice is
+// A release is immutable, so publishing the same identifier twice is
 // refused. This is the property SetIfAbsent exists for.
 func TestPublishRefusesAnExistingRelease(t *testing.T) {
 	t.Parallel()
@@ -300,8 +300,8 @@ func TestPublishAcceptsZipAndTarGz(t *testing.T) {
 	}
 }
 
-// A bundle whose script is not wrapped for truncation is rejected whole
-// (§6.3), and nothing from it is published.
+// A bundle whose script is not wrapped for truncation is rejected whole,
+// and nothing from it is published.
 func TestPublishRejectsAnUnwrappedScript(t *testing.T) {
 	t.Parallel()
 
@@ -423,7 +423,7 @@ func TestPublishSignaturePolicy(t *testing.T) {
 	})
 }
 
-// The §6.1 ordering property: when a signature is required, the extractor is
+// The ordering property: when a signature is required, the extractor is
 // not reached until the bytes are known to come from the trusted key. A
 // malformed archive with no signature must therefore fail on the signature,
 // not on the archive.
@@ -759,7 +759,7 @@ func TestMissingObjectIsReported(t *testing.T) {
 	require.ErrorIs(t, err, app.ErrObjectNotFound)
 }
 
-// §9.8: Scan returns entries in unspecified order, so List must sort for
+// Scan returns entries in unspecified order, so List must sort for
 // itself. Asserted by publishing out of order and checking the result.
 func TestReleaseListIsOrdered(t *testing.T) {
 	t.Parallel()
@@ -788,7 +788,7 @@ func TestReleaseListIsOrdered(t *testing.T) {
 func TestEventTaxonomyMatchesTheDesignDocument(t *testing.T) {
 	t.Parallel()
 
-	// §7.2's table, exactly.
+	// The documented event taxonomy, exactly.
 	want := []string{
 		"bundle.published",
 		"bundle.rejected",

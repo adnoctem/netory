@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// The PowerShell truncation check (§9.5).
+// The PowerShell truncation check.
 //
 // PowerShell parses a whole script before executing any of it, so a truncation
 // that breaks syntax is caught by the interpreter. That is not enough on its

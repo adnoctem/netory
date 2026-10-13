@@ -46,8 +46,8 @@ const (
 //
 // Bundles are small by construction - MaxTotalBytes caps the lot - and keeping
 // them in memory means nothing hostile is written to the filesystem until the
-// whole bundle has passed validation. That is the staging requirement in §6.1,
-// achieved by not staging on disk at all: a malicious archive never touches
+// whole bundle has passed validation. Staging is achieved by not staging on
+// disk at all: a malicious archive never touches
 // the live tree, nor any tree.
 type File struct {
 	// Name is the entry's path inside the archive, canonical and relative.
@@ -203,7 +203,7 @@ func (a *Archive) loadManifest() error {
 
 // checkRoutes confirms every route names a file that was actually extracted.
 //
-// This is validation step 3 of §4.2, and it is checked against the extracted
+// Every route must reference a file in the archive, and it is checked against the extracted
 // set rather than against the archive's own index - so an entry the extractor
 // skipped or rejected cannot be referenced by a route that then serves
 // nothing.
@@ -351,7 +351,7 @@ func extractTarGz(data []byte) (map[string]*File, error) {
 		case tar.TypeDir:
 			continue
 		case tar.TypeSymlink, tar.TypeLink:
-			// §6.1 rejects both outright. A symlink can point anywhere on the
+			// Both are rejected outright. A symlink can point anywhere on the
 			// server's filesystem, and a hardlink can alias a file outside the
 			// bundle; neither has any legitimate use in a bundle of scripts.
 			return nil, fmt.Errorf(
@@ -443,7 +443,7 @@ func addFile(files map[string]*File, name string, content []byte) error {
 
 // sanitiseEntryName validates an archive entry name.
 //
-// This is the zip-slip defence (§6.1). The name is rejected rather than
+// This is the zip-slip defence. The name is rejected rather than
 // cleaned: cleaning "../../etc/passwd" into "etc/passwd" turns a hostile entry
 // into a plausible one, which is how a path-traversal check becomes a
 // path-traversal feature.

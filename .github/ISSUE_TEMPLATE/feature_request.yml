@@ -8,9 +8,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        Each service's scope is set by its design document in `docs/design/`, including an explicit
-        out-of-scope list. Please check the relevant one first - a request that the design document
-        rules out needs an argument against that decision rather than a restatement of the request.
+        Each service's scope, including what is explicitly out of scope, is described in
+        `docs/ARCHITECTURE.md`. Please check it first - a request for something listed as out of scope
+        needs an argument for changing the scope rather than a restatement of the request.
   - type: dropdown
     attributes:
       label: Which service?

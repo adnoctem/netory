@@ -6,20 +6,16 @@
 //
 // # Namespaces are arguments, never state
 //
-// This package is a port of gopskit's pkg/kv, and the central change is that
-// the namespace is a parameter on every operation. gopskit holds the current
-// namespace as a mutable field on its Database and exposes SetNamespace to
-// move it, which means two goroutines running SetNamespace followed by Set can
-// interleave and write into each other's namespace. That is a correctness
-// defect in any concurrent server, and all three netory design documents flag
-// it as blocking reuse.
+// The namespace is a parameter on every operation. A mutable "current
+// namespace" set before each write - the design of gopskit's pkg/kv - lets two
+// goroutines running "set namespace, then write" interleave and write into
+// each other's namespace, which is a correctness defect in any concurrent
+// server.
 //
-// There is therefore no SetNamespace here and no current namespace to move.
-// Callers either pass the namespace per call or bind one into an immutable
-// Handle. The same change removed the need for gopskit's global mutex, which
-// serialised every read and every write: Badger is already safe for concurrent
-// use and does its own conflict detection, so the lock protected nothing but
-// the mutable namespace field it no longer has.
+// There is therefore no current namespace to move. Callers either pass the
+// namespace per call or bind one into an immutable Handle. No global mutex is
+// needed either: Badger is safe for concurrent use and does its own conflict
+// detection.
 //
 // # What implementations must agree on
 //

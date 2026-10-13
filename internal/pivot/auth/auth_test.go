@@ -709,7 +709,7 @@ func TestOAuth2BackendSurvivesACacheFailure(t *testing.T) {
 }
 
 // A rejected credential is a configuration problem that will not fix itself,
-// so it is a distinct error from a transport failure - §8.3's
+// so it is a distinct error from a transport failure - the
 // backend.auth_failed event exists for exactly this.
 func TestOAuth2BackendReportsRejection(t *testing.T) {
 	t.Parallel()
@@ -781,8 +781,8 @@ func TestOAuth2BackendAssumesAShortLifetime(t *testing.T) {
 }
 
 // Tokens must not be shared between pivot clients: two customers' requests
-// reaching the backend under one integration would collapse the second of §1's
-// two layers entirely.
+// reaching the backend under one integration would collapse the second of pivot's
+// two access-control layers entirely.
 func TestOAuth2BackendKeysTheCachePerClient(t *testing.T) {
 	t.Parallel()
 

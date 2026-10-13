@@ -29,7 +29,7 @@ var (
 	ErrNoSigningKey = errors.New("signpost: no trusted public key to verify the signature against")
 
 	// ErrTruncationOptOutRefused is returned when a manifest opts a route out
-	// of the §6.3 check and the instance does not allow it.
+	// of the truncation check and the instance does not allow it.
 	ErrTruncationOptOutRefused = errors.New(
 		"signpost: this instance does not allow opting a route out of the truncation check")
 )
@@ -71,11 +71,11 @@ type PublishResult struct {
 	Moved []Alias
 }
 
-// Validate runs the §4.2 validation over an archive without publishing it.
+// Validate runs the bundle validation over an archive without publishing it.
 //
 // This is what `bundle validate` calls on the server side and what Publish
 // calls before it writes anything. The same function in both places is the
-// point: §4.2 requires the server's pass to be the one that is trusted, and
+// point: the server's pass is the one that is trusted, and
 // two implementations of "the same validation" would eventually stop being
 // the same.
 func (s *State) Validate(ctx context.Context, req PublishRequest) (*bundle.Archive, SignatureRecord, error) {
@@ -97,7 +97,7 @@ func (s *State) validate(req PublishRequest, settings Settings) (*bundle.Archive
 	//
 	// Order matters here and it is the one place in the publish path where it
 	// is a security property rather than a convenience: the extractor is the
-	// component that processes attacker-shaped input (§6.1), so when a
+	// component that processes attacker-shaped input, so when a
 	// signature is required, nothing hostile reaches it until the bytes have
 	// been shown to come from the trusted key.
 	signature, err := s.verifySignature(req, settings)
@@ -158,7 +158,7 @@ func (s *State) verifySignature(req PublishRequest, settings Settings) (Signatur
 	}, nil
 }
 
-// checkTruncation applies the §6.3 check to every route of an archive.
+// checkTruncation applies the truncation check to every route of an archive.
 func (s *State) checkTruncation(archive *bundle.Archive, settings Settings) error {
 	for i := range archive.Manifest.Routes {
 		route := &archive.Manifest.Routes[i]
@@ -190,7 +190,7 @@ func (s *State) checkTruncation(archive *bundle.Archive, settings Settings) erro
 
 // PublishBundle validates, stores and publishes a bundle.
 //
-// The order is the whole of §2's atomicity. Content is written first, then the
+// The order is the whole of the publish's atomicity. Content is written first, then the
 // release record, then the aliases, then the route table. Every step is only
 // reachable once the one before it succeeded, so at no point does an alias
 // name a release whose content is not yet there - a client following an alias
@@ -466,7 +466,7 @@ func (s *State) RemoveAlias(ctx context.Context, name, by string) error {
 
 // Rollback moves an alias back to the release it pointed at before.
 //
-// One step, which is what §5 asks for. Rollback exists to undo the publish
+// One step. Rollback exists to undo the publish
 // that just broke; a chain nobody prunes would be another thing to reason
 // about at the moment reasoning is hardest.
 func (s *State) Rollback(ctx context.Context, name, by string) (Alias, error) {

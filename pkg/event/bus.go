@@ -108,8 +108,8 @@ const (
 	DefaultPollInterval = 30 * time.Second
 
 	// DefaultDedupWindow collapses identical events within a minute of each
-	// other. protean section 8.2 requires that a flapping connection does not
-	// send one mail per address change, and this is that control.
+	// other, so that a flapping protean connection does not send one mail per
+	// address change, and this is that control.
 	DefaultDedupWindow = time.Minute
 
 	// DefaultBatchSize bounds a delivery pass, so a large backlog is drained

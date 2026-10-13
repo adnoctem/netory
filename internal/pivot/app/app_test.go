@@ -28,14 +28,13 @@ func silentLogger(t *testing.T) *log.Logger {
 
 // testDB is the Valkey logical database these tests use.
 //
-// Not database 0, and the reason is a bug this caused: pivot's namespaces are
-// compile-time constants, so these tests cannot scope themselves with a
-// per-test prefix the way pkg/kv/valkeykv's do. The first version cleaned up
-// with `SCAN *` plus `DEL`, which deleted the conformance suite's keys out
-// from under it when `go test ./...` ran the two packages at once - and
-// presented as the conformance suite failing. A separate database keeps the
-// two apart, and the cleanup below is still scoped to pivot's own prefixes so
-// nothing here can delete a key it did not write.
+// Not database 0: pivot's namespaces are compile-time constants, so these
+// tests cannot scope themselves with a per-test prefix the way
+// pkg/kv/valkeykv's do. A wildcard cleanup would delete the conformance
+// suite's keys when `go test ./...` runs the two packages at once, and the
+// failure would surface in the conformance suite. A separate database keeps
+// the two apart, and the cleanup below is still scoped to pivot's own
+// prefixes so nothing here can delete a key it did not write.
 const testDB = 1
 
 // newState builds application state against a real Valkey, in a database of
@@ -193,8 +192,8 @@ func TestClientLifecycle(t *testing.T) {
 }
 
 // Valkey has no encryption at rest, so a snapshot must not hold a backend
-// credential in the clear. This is the property §8 asks pivot to provide
-// itself, asserted against the raw stored bytes.
+// credential in the clear. pivot provides this itself, and this
+// asserts it against the raw stored bytes.
 func TestBackendCredentialsAreSealedInValkey(t *testing.T) {
 	ctx := context.Background()
 	state := newState(t)

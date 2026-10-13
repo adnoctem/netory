@@ -201,7 +201,7 @@ func TestKeyIsFixedLength(t *testing.T) {
 	assert.NoError(t, kv.ValidateKey(long.String()))
 }
 
-// §7.2 requires the backend's own caching directives to be honoured. A proxy
+// The backend's own caching directives must be honoured. A proxy
 // that ignored them would be caching precisely what the backend was careful
 // about.
 func TestStorable(t *testing.T) {
@@ -305,7 +305,7 @@ func TestEncryptedEntries(t *testing.T) {
 	assert.Equal(t, `{"total":1}`, string(entry.Body))
 }
 
-// §7.3's flag is set on routes whose responses can carry personal data, so
+// The encrypt flag is set on routes whose responses can carry personal data, so
 // storing one in the clear because no key was configured would break the exact
 // promise the flag was turned on to make.
 func TestEncryptedRouteWithoutAKeyFails(t *testing.T) {

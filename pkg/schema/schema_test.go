@@ -77,11 +77,11 @@ func TestObjectFallsBackToTheGoType(t *testing.T) {
 	}
 }
 
-// TestObjectYieldsToAnExplicitShape is a regression test.
+// TestObjectYieldsToAnExplicitShape guards the derived-type fallback.
 //
 // A `oneOf` over a string and an integer with a derived `"type": "integer"`
-// added beside it rejects the string, because both keywords apply - which is
-// how pivot's `ttl: 5m` came to be refused by a schema written to allow it.
+// added beside it rejects the string, because both keywords apply - so pivot's
+// `ttl: 5m` would be refused by a schema written to allow it.
 func TestObjectYieldsToAnExplicitShape(t *testing.T) {
 	t.Parallel()
 

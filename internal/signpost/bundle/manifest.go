@@ -83,7 +83,7 @@ type Route struct {
 	// file extension when absent.
 	ContentType string `json:"content_type,omitempty" yaml:"content_type,omitempty"`
 
-	// SkipTruncationCheck opts one route out of the §6.3 structural check.
+	// SkipTruncationCheck opts one route out of the structural truncation check.
 	//
 	// It exists because the check is a heuristic over shell syntax and will
 	// occasionally be wrong about a legitimate script. Opting out is a
@@ -97,8 +97,8 @@ type Route struct {
 //
 // A route may not collide with the server's own paths, or with the derived
 // paths it serves. Checked at validation so a bundle cannot shadow them -
-// shadowing /healthz would make the service look unhealthy, and shadowing a
-// .sha256 path would make a checksum lie about which bytes it covers.
+// shadowing /healthz would make the service look unhealthy, and shadowing a.
+// sha256 path would make a checksum lie about which bytes it covers.
 const (
 	// ChecksumSuffix is appended to every route to serve its SHA-256.
 	ChecksumSuffix = ".sha256"
@@ -109,7 +109,7 @@ const (
 
 // versionedPrefix matches a first path segment reserved for versioned access.
 //
-// Versioned routes are served at /v<release>/<path> (§5), so a bundle route
+// Versioned routes are served at /v<release>/<path>, so a bundle route
 // whose first segment looks like that would be unreachable - the versioned
 // resolver would claim it first. Rejecting it at validation turns a confusing
 // silent shadowing into an error naming the problem.
@@ -150,7 +150,7 @@ var (
 // Validate reports whether the manifest is one signpost can publish.
 //
 // Every failure names the offending route by index and path, because a
-// rejected bundle is rejected whole (§2) and the operator needs to know which
+// rejected bundle is rejected whole and the operator needs to know which
 // entry to fix rather than being told the bundle is invalid.
 func (m *Manifest) Validate() error {
 	if m.Version != ManifestVersion {

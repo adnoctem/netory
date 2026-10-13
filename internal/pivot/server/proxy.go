@@ -20,7 +20,7 @@ import (
 
 // Headers pivot sets on its own responses.
 //
-// Deliberately few. §2 promises pivot is invisible to customers' clients, so
+// Deliberately few. pivot is meant to be invisible to customers' clients, so
 // it adds only what a client could not otherwise know: the cache state, and
 // the rate-limit position. Anything else would be pivot announcing itself in a
 // response that is meant to look like the backend's.
@@ -51,7 +51,7 @@ const (
 // ServeMux cleans the request path and answers a non-canonical one with a
 // redirect of its own: a request for "/api/v1/../_action/order" never reaches
 // a handler, it gets a 307 to "/api/_action/order". That is precisely the
-// second interpretation §2 exists to eliminate - the path would be
+// second interpretation normalization exists to eliminate - the path would be
 // canonicalized by net/http's rules rather than by rules.Normalize, pivot
 // would never evaluate the request it was actually sent, and a client that
 // does not follow redirects would get a 307 where it should have got a
@@ -133,9 +133,9 @@ type outcome struct {
 	upstream bool
 }
 
-// handle is §4's pipeline.
+// handle is the request pipeline.
 //
-// The order is the design document's and the ordering is the point: cheap
+// The ordering is the point: cheap
 // rejections come first so that denied, unauthenticated or rate-limited
 // traffic never costs a backend call. Each stage either ends the request or
 // hands on.
@@ -155,8 +155,8 @@ func (s *Server) handle(w http.ResponseWriter, r *http.Request) {
 	defer func() { s.access(r, settings, result, started) }()
 
 	// Stage 1: normalize. A method pivot never forwards is refused here,
-	// before any rule set is consulted, which is what makes §10.1's "never" a
-	// property of the code rather than of the configuration.
+	// before any rule set is consulted, which is what makes "pivot never forwards a
+	// write" a property of the code rather than of the configuration.
 	auth.StripMethodOverride(r)
 
 	if !rules.IsForwardable(r.Method) {
@@ -187,7 +187,7 @@ func (s *Server) handle(w http.ResponseWriter, r *http.Request) {
 	// plaintext hop is a disclosed credential and the client will keep
 	// sending it. Unknown is tolerated rather than refused - in proxy mode
 	// without a declared trusted set pivot cannot tell, and refusing would
-	// break the deployment §10.7 calls expected. The startup log warns about
+	// break the expected reverse-proxy deployment. The startup log warns about
 	// that configuration instead.
 	if s.forwarded.Encryption(r) == forwarded.Plaintext {
 		s.log.Warn("refusing a plaintext request: credentials travel on every request",
@@ -299,7 +299,7 @@ func (s *Server) authenticate(
 		}
 
 		// The reason goes to the log rather than to the stored trail: one
-		// record per failed request would be the volume §10.8's split exists
+		// record per failed request would be the volume the audit split exists
 		// to avoid, and the aggregator writes the durable record once the
 		// failures look like an incident rather than a typo.
 		s.log.Warn("authentication failed",
@@ -457,11 +457,11 @@ func (s *Server) sourceFor(r *http.Request, settings app.Settings) string {
 	return app.RecordAddress(settings.AccessLogAddress, source)
 }
 
-// access writes the per-request audit log line (§9.2).
+// access writes the per-request audit log line.
 //
 // To the structured log rather than to Valkey: this is one record per request,
-// so the operator's log pipeline owns the volume and the retention. §10.8
-// records the split and why pivot cannot promise a retention period for
+// so the operator's log pipeline owns the volume and the retention. pivot
+// cannot promise a retention period for
 // records that leave the process.
 //
 // Every field a client controls is bounded and stripped of control characters,

@@ -336,8 +336,7 @@ func (r *statusRecorder) Write(b []byte) (int, error) {
 }
 
 // audit wraps a handler so every administrative request is recorded with who,
-// what and when - the requirement in protean section 9.2, signpost section 8.1
-// and pivot section 9.2.
+// what and when.
 //
 // Reads are logged at debug and mutations at info, because `host list` run in a
 // loop by a monitoring script would otherwise bury the one `host remove` that

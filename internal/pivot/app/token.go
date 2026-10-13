@@ -30,8 +30,8 @@ const DefaultTokenLifetime = 10 * time.Minute
 // MaxTokenLifetime bounds the configurable lifetime.
 //
 // An access token is a bearer credential that travels on every request. A
-// lifetime of days would make revocation theoretical: §6.1 promises tokens are
-// revocable immediately, and `token revoke` delivers that, but a token nobody
+// lifetime of days would make revocation theoretical: tokens are revocable
+// immediately, and `token revoke` delivers that, but a token nobody
 // revokes is one that works for as long as it lives.
 const MaxTokenLifetime = 24 * time.Hour
 
@@ -106,7 +106,7 @@ func NewTokens(store kv.Handle, now func() time.Time) *Tokens {
 // token disappears from the store rather than accumulating. That matters more
 // here than for a cache entry: tokens are issued per client per lifetime, so
 // a busy instance would otherwise grow a token record every few minutes
-// forever, and the listing operations §8.2 warns about would get slower
+// forever, and the expensive listing operations would get slower
 // without bound.
 func (t *Tokens) Issue(ctx context.Context, client, label, scope, by string, lifetime time.Duration) (string, Token, error) {
 	if lifetime <= 0 {
@@ -247,8 +247,8 @@ func (t *Tokens) ListFor(ctx context.Context, client string) ([]Token, error) {
 //
 // A scan because the key is the token's hash, which is the right key - it
 // means the store holds no usable credential - and the cost is that finding a
-// client's tokens cannot be a lookup. This is an administrative path, which
-// §8.2 says is where a namespace walk belongs.
+// client's tokens cannot be a lookup. This is an administrative path, which is
+// where a namespace walk belongs.
 func (t *Tokens) listFor(ctx context.Context, client string) ([]Token, error) {
 	now := t.now()
 

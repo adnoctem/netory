@@ -48,8 +48,7 @@ func init() {
 //
 // Written against the API directly rather than through libdns, because the
 // available libdns implementations for Spaceship are several competing
-// third-party packages of varying maturity - protean's design document
-// (section 7.2) calls for evaluating them or writing one, and the surface
+// third-party packages of varying maturity, and the surface
 // needed here is three endpoints.
 //
 // Spaceship's API is separate from Namecheap's. A domain hosted at Namecheap
@@ -223,8 +222,8 @@ func (s *spaceshipProvider) Get(ctx context.Context, zone, name string) ([]Recor
 // sub-second gap during a change that was about to invalidate every cached
 // answer anyway is cheap by comparison.
 //
-// See protean section 10.2 - the exact replace semantics of the save endpoint
-// want confirming against a live account.
+// The exact replace semantics of the save endpoint are unverified against a
+// live account; docs/TODO.md tracks it.
 func (s *spaceshipProvider) Upsert(ctx context.Context, zone string, records []Record) error {
 	if err := ValidateAll(records); err != nil {
 		return fmt.Errorf("provider %q: %w", s.name, err)

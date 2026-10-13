@@ -17,14 +17,14 @@ const backendTokenPrefix = "backend-token/"
 // backendTokenCache shares backend access tokens between replicas.
 //
 // This is the auth.TokenCache the oauth2 backend mode asks for, and sharing it
-// is not an optimisation. §6.2 says the token manager shares tokens across
-// replicas through Valkey, and the reason is that some backends - Shopware
+// is not an optimisation. The token manager shares tokens across replicas
+// through Valkey because that some backends - Shopware
 // among them - issue a token that invalidates the previous one. Replicas each
 // fetching their own would therefore revoke each other's, and a deployment
 // would get steadily worse as it scaled out.
 //
-// The tokens are sealed. A backend access token is a credential: §8 lists it
-// among the values pivot encrypts itself, and a Valkey snapshot holding one in
+// The tokens are sealed. A backend access token is a credential, and so among
+// the values pivot encrypts itself, and a Valkey snapshot holding one in
 // the clear would be a working credential for the backend.
 type backendTokenCache struct {
 	state *State

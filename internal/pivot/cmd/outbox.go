@@ -12,7 +12,7 @@ import (
 
 // newOutboxCommand builds `pivot outbox`.
 //
-// Not in the design document's command tree, but the outbox is the mechanism
+// The outbox is the mechanism
 // behind "nothing lost on restart" and an operator needs some way to see it.
 // An alert that never arrived is exactly what someone goes looking for after an
 // incident, and without this the only way to find it is to read the log.

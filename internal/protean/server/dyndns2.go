@@ -14,7 +14,7 @@ import (
 // firmware is worse than an old protocol that works today.
 type Response string
 
-// The DynDNS2 return codes protean uses (section 6.2).
+// The DynDNS2 return codes protean uses.
 const (
 	// RespGood means the address was updated. It is followed by the address.
 	RespGood Response = "good"

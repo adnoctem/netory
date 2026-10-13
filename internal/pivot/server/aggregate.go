@@ -9,7 +9,7 @@ import (
 	"github.com/adnoctem/netory/internal/pivot/app"
 )
 
-// Thresholds and the window §8.3's aggregated events use.
+// Thresholds and the window the aggregated events use.
 //
 // Constants rather than settings, deliberately. Each one is a judgement about
 // when a count stops being noise and starts being an incident, and none of
@@ -42,13 +42,12 @@ const (
 	BackendFailureThreshold = 5
 )
 
-// Aggregator collects per-request outcomes and emits §8.3's aggregated events
-// and §9.2's stored security records.
+// Aggregator collects per-request outcomes and emits the aggregated events
+// and the stored security records.
 //
 // Both are aggregated, and that is the whole reason this type exists on the
-// storage side as well as the notification side. §10.8 promises that what
-// pivot stores itself is low-volume enough to carry a ninety-day retention,
-// and a stored record per refused request would break that promise on the
+// storage side as well as the notification side. What pivot stores itself has
+// to be low-volume enough to carry a ninety-day retention, and a stored record per refused request would break that promise on the
 // first client that retried a denied path in a loop. The per-request detail is
 // not lost - the access log carries the client, the method, the normalized
 // path, the matched rule and the status for every single request - what is

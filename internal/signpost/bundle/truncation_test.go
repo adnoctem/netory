@@ -17,7 +17,7 @@ func check(t *testing.T, routePath, script string) error {
 	return bundle.CheckTruncation("scripts/"+strings.TrimPrefix(routePath, "/"), routePath, []byte(script))
 }
 
-// The shape §6.3 specifies, in the variations a real installer uses.
+// The required wrapper shape, in the variations a real installer uses.
 func TestShellAcceptsWrappedScripts(t *testing.T) {
 	asrt := assert.New(t)
 

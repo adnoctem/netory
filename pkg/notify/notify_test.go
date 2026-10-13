@@ -56,7 +56,7 @@ func TestNewRequiresAName(t *testing.T) {
 	assert.Error(t, err)
 }
 
-// `notifier list` must never print a credential (protean section 8.3).
+// `notifier list` must never print a credential.
 func TestRedactedHidesSecrets(t *testing.T) {
 	asrt := assert.New(t)
 

@@ -13,11 +13,11 @@ import (
 	"time"
 )
 
-// BackendMode is how pivot authenticates to the backend (§6.2).
+// BackendMode is how pivot authenticates to the backend.
 type BackendMode string
 
 // The backend modes. All three are supported because a backend-agnostic core
-// (§2) cannot assume the one Shopware happens to use.
+// cannot assume the one Shopware happens to use.
 const (
 	// BackendOAuth2 is the client-credentials grant: pivot fetches a token
 	// and refreshes it before expiry.
@@ -62,9 +62,9 @@ const MaxTokenResponseBytes = 64 << 10
 
 // BackendConfig is one client's backend credentials.
 //
-// One set per pivot client, as §6.2 requires: a customer's requests reach the
+// One set per pivot client: a customer's requests reach the
 // backend as that customer's own integration, with that integration's
-// permissions. It is the second of §1's two layers, and the only one that can
+// permissions. It is the second of pivot's two access-control layers, and the only one that can
 // see data reachable through an allowed entity's associations.
 type BackendConfig struct {
 	// Mode selects the credential kind.
@@ -218,7 +218,7 @@ func redact(value string) string {
 // An interface rather than a Valkey call, so this package stays free of the
 // store - and so a test can exercise the refresh logic without one. The app
 // layer implements it over an encrypted Valkey namespace, because a backend
-// token is a credential: §8 lists it among the values pivot encrypts itself,
+// token is a credential, and so among the values pivot encrypts itself,
 // Valkey having no encryption at rest.
 //
 // Shared across replicas and not merely cached locally, which is the point.
@@ -251,7 +251,7 @@ type BackendOptions struct {
 	// ClientKey identifies the pivot client these credentials belong to, and
 	// is the token cache's key. Tokens must not be shared between pivot
 	// clients: two customers' requests reaching the backend under one
-	// integration would collapse §1's second layer entirely.
+	// integration would collapse the second access-control layer entirely.
 	ClientKey string
 
 	// Cache shares tokens across replicas. Nil means each process keeps its
@@ -529,7 +529,7 @@ func (o *oauth2Backend) fetch(ctx context.Context) (string, time.Time, error) {
 // ErrBackendRejected is returned when the backend refuses pivot's own
 // credentials. It is distinct from a transport failure because the response is
 // different: a rejected credential is a configuration problem that will not
-// fix itself, and §8.3's backend.auth_failed event exists for it.
+// fix itself, and the backend.auth_failed event exists for it.
 var ErrBackendRejected = errors.New("auth: the backend rejected pivot's credentials")
 
 // summarise trims a backend error body for a log line.

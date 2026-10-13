@@ -83,7 +83,7 @@ func TestSchemaDescribesEveryField(t *testing.T) {
 // TestSchemaMatchesStructTags asserts the schema's property set and required
 // list are exactly what the Go structs declare.
 //
-// This is the agreement §9.1 asked for, checked rather than assumed: the
+// Agreement between schema and types, checked rather than assumed: the
 // properties come from the json tags and the required list from the absence of
 // omitempty, so a field renamed in Go and not in the schema - or made optional
 // in one place only - is caught here.

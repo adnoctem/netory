@@ -270,7 +270,7 @@ func (s *Server) applyUpdate(w http.ResponseWriter, r *http.Request, host app.Ho
 	}
 
 	// Split into what actually changed and what did not. An unchanged address
-	// costs nothing downstream (section 6.4), which is the single most
+	// costs nothing downstream, which is the single most
 	// important performance property of this endpoint: a router re-sending the
 	// same address every five minutes is the normal case.
 	var (
@@ -347,13 +347,13 @@ func (s *Server) applyUpdate(w http.ResponseWriter, r *http.Request, host app.Ho
 // myip and myipv6 take precedence over the request's source address, which
 // matters on a DS-Lite connection: there the IPv4 address protean observes
 // belongs to the ISP's carrier-grade NAT, not the subscriber, so the client's
-// own idea of its address is the only correct one (section 6.3).
+// own idea of its address is the only correct one.
 //
 // That precedence is why an explicit address is never silently replaced by the
 // source address. A client that states an address protean cannot publish is
 // refused, not quietly corrected: substituting the source address there would
-// publish the carrier-grade NAT address on exactly the connections section 6.3
-// is about, and the client would have no way to tell.
+// publish the carrier-grade NAT address on exactly the DS-Lite connections
+// where it is wrong, and the client would have no way to tell.
 func (s *Server) resolveAddresses(
 	r *http.Request, host app.Host, source netip.Addr,
 ) ([]addressUpdate, Response) {

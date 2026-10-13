@@ -232,7 +232,7 @@ func UnsupportedGrant(grant string) Error {
 	}
 }
 
-// MethodOverrideHeaders are stripped from every request (§5.1).
+// MethodOverrideHeaders are stripped from every request.
 //
 // A proxy that forwarded one would let a client turn an allowed GET into a
 // method the rules never evaluated - the request pivot judged and the request

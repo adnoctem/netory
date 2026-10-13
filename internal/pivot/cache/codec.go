@@ -40,7 +40,7 @@ var (
 	// ErrPlaintextEntry is returned when a route that requires encryption
 	// reads an entry that was stored in the clear.
 	//
-	// §7.3's flag is set on routes whose responses can carry personal data, so
+	// The encrypt flag is set on routes whose responses can carry personal data, so
 	// an entry stored before the flag was turned on must be discarded rather
 	// than served - it is exactly the data the operator decided needed
 	// protecting.
@@ -49,7 +49,7 @@ var (
 
 // Codec encodes and decodes cache entries, sealing them when a key is set.
 //
-// The key is per-instance rather than per-route: §7.3 makes encryption a
+// The key is per-instance rather than per-route: encryption is a
 // per-route flag, not a per-route key, so an operator turning the flag on for
 // a route needs no key management of their own.
 type Codec struct {
@@ -74,7 +74,7 @@ func (c *Codec) CanEncrypt() bool { return c.sealer.CanSeal() }
 // Encode renders an entry for storage, sealing it when encrypt is set.
 //
 // A route marked encrypt without a key available is an error rather than a
-// plaintext write. §7.3's whole point is that the flag is set on routes whose
+// plaintext write. The flag's whole point is that it is set on routes whose
 // responses can carry personal data, so silently storing one in the clear
 // would break exactly the promise the flag was turned on to make.
 func (c *Codec) Encode(entry Entry, encrypt bool) ([]byte, error) {

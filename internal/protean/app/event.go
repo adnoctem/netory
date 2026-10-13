@@ -6,7 +6,7 @@ import (
 	"github.com/adnoctem/netory/pkg/event"
 )
 
-// protean's event taxonomy, as section 8.1 defines it.
+// protean's event taxonomy, as docs/ARCHITECTURE.md documents it.
 //
 // The constants live here rather than in pkg/event because each service has its
 // own taxonomy and the shared package stays agnostic about them.
@@ -34,7 +34,7 @@ const (
 )
 
 // EventTypes lists every event protean emits, for `notifier` documentation and
-// for a test that asserts the taxonomy matches the design document.
+// for a test that asserts the taxonomy matches the documented one.
 func EventTypes() []event.Type {
 	return []event.Type{
 		EventHostUpdated,

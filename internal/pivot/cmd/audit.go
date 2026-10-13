@@ -11,9 +11,9 @@ import (
 
 // newAuditCommand builds `pivot audit`.
 //
-// Not in §3.1's tree, and it belongs there: §9.2 requires an audit trail and
-// §10.8 settles that pivot stores the low-volume half of it itself. A trail
-// nothing can read is a trail nobody will consult.
+// pivot stores the low-volume half of its audit trail - administrative
+// actions and aggregated security outcomes - itself, and this is how it is
+// read. A trail nothing can read is a trail nobody will consult.
 func newAuditCommand(opts *Options) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "audit",

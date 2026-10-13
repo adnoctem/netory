@@ -39,7 +39,7 @@ MD036:
 MD041: false
 
 # MD028/no-blanks-blockquote : Blank line inside blockquote : https://github.com/DavidAnson/markdownlint/blob/v0.34.0/doc/md028.md
-# NOTE: disabled because the design documents use Obsidian callouts (`> [!WARNING]`), and two
+# NOTE: disabled because the documentation uses GitHub alert callouts (`> [!WARNING]`), and two
 # consecutive callouts *must* be separated by a blank line or they render as one merged block.
 # The rule cannot tell that apart from an accidentally split quote.
 MD028: false

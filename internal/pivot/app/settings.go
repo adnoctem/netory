@@ -41,8 +41,8 @@ const (
 	// DefaultAuditRetention is how long pivot keeps the audit records it
 	// stores itself.
 	//
-	// Ninety days, as Max asked for. Worth being precise about the reasoning,
-	// since §9.2 makes this a compliance artefact: there is no statutory
+	// Ninety days. Worth being precise about the reasoning, since the audit
+	// trail is a compliance artefact: there is no statutory
 	// maximum of ninety days under GDPR - Art. 5(1)(e) is a necessity test,
 	// not a number - so this is a defensible proportionate period rather than
 	// "the legal limit". It matches protean's address-history default, which
@@ -69,8 +69,8 @@ const (
 // Settings are pivot's runtime-configurable values, stored in Valkey.
 //
 // Stored centrally rather than per replica, which is what makes `pivot config
-// set` on one replica apply to all of them - §3 promises exactly that, and it
-// is the reason these are not flags.
+// set` on one replica apply to all of them, and the reason these are not
+// flags.
 type Settings struct {
 	// Frontend is how customers authenticate, and where pivot answers its own
 	// token endpoint.
@@ -120,7 +120,7 @@ func DefaultSettings() Settings {
 
 		// Deduplication off, for the same reason signpost's is: every pivot
 		// event is either an administrative act or an aggregated incident
-		// report, and §8.3's rule.denied and client.rate_limited are already
+		// report, and rule.denied and client.rate_limited are already
 		// aggregated at the source. Collapsing on top of that would hide the
 		// second distinct incident of a minute.
 		NotifyDedupWindow: 0,
@@ -479,7 +479,7 @@ func (s *SettingsStore) Save(ctx context.Context, settings Settings) error {
 // parseBackendURL validates a backend origin and returns it normalised.
 //
 // It delegates to config.ParseBackendURL so one rule governs the URL whether
-// it arrives as a setting or as a flag: §2 depends on the forwarded path being
+// it arrives as a setting or as a flag: path matching depends on the forwarded path being
 // exactly the normalized one, and a base URL carrying a path of its own would
 // prepend to a path the rules never saw.
 func parseBackendURL(value string) (string, error) {

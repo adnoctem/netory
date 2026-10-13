@@ -21,7 +21,7 @@ type Resolution struct {
 	Release string
 
 	// Versioned reports whether the request came in on a /v<release>/ path,
-	// which decides the cache lifetime (§5.2).
+	// which decides the cache lifetime.
 	Versioned bool
 
 	// Checksum reports whether the request was for the route's `.sha256`
@@ -34,7 +34,7 @@ type Resolution struct {
 // Immutable and swapped whole. The serving path reads it through an
 // atomic.Pointer and never takes a lock, so a publish cannot make a request
 // wait, and - more importantly - a request can never observe a table that is
-// half-rebuilt. That is the other half of §2's atomic alias swap: the swap is
+// half-rebuilt. That is the other half of the atomic alias swap: the swap is
 // atomic in the database, and what the server serves changes atomically too.
 //
 // It holds metadata only. Content is fetched from Storage on demand, so the

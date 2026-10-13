@@ -181,8 +181,8 @@ func buildBinary(t *testing.T) string {
 //
 // The suite applies the same file the documentation tells an operator to copy,
 // rather than a rule set written for the test. pivot ships no rule set, so if
-// that file were wrong there would be nothing else to be right - and §10.6
-// rests on the Shopware example having been checked against a backend
+// that file were wrong there would be nothing else to be right - and the
+// Shopware example's claims rest on it being checked against a backend
 // speaking the Admin API's shapes.
 func ExamplePath(t *testing.T, name string) string {
 	t.Helper()
@@ -358,8 +358,7 @@ func (r *Replica) LogMark() int { return r.log.Len() }
 // accumulated log instead makes every wait after the first return
 // immediately, on a line an earlier step produced - so "wait for the reload"
 // quietly becomes "a reload happened at some point", and the assertion that
-// follows races the thing it was waiting for. That showed up as a 403 where a
-// 200 was expected, in one run out of four.
+// follows races the thing it was waiting for.
 func (r *Replica) WaitForLog(t *testing.T, mark int, substr string, within time.Duration) {
 	t.Helper()
 

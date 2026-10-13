@@ -14,7 +14,7 @@ const maxDedupEntries = 10_000
 
 // deduplicator collapses identical events that occur close together.
 //
-// protean section 8.2 requires that a flapping connection does not send one
+// A flapping protean connection must not send one
 // mail per address change, and signpost and pivot aggregate their denial and
 // rate-limit events for the same reason. The identity used is the event's type
 // and subject, not its whole content: the point is to suppress "host.updated

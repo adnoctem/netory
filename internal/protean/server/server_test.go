@@ -356,7 +356,7 @@ func TestUpdateFallsBackToTheSourceAddress(t *testing.T) {
 // unreachable.
 //
 // Crucially the request is refused rather than falling back to the source
-// address: an explicit myip takes precedence (section 6.3), and substituting
+// address: an explicit myip takes precedence, and substituting
 // the observed source would publish the carrier-grade NAT address on exactly
 // the DS-Lite connections that precedence exists for.
 func TestUpdateRefusesUnpublishableAddresses(t *testing.T) {

@@ -393,7 +393,7 @@ func TestAdminPublishWithoutAnArchive(t *testing.T) {
 }
 
 // The public listener is read-only: no path on it changes anything, which is
-// what makes "local-only publishing" (§2) a property of the code rather than a
+// what makes "local-only publishing" a property of the code rather than a
 // convention. Asserted by firing the admin API's own paths at it.
 func TestPublicListenerExposesNoAdminPath(t *testing.T) {
 	t.Parallel()

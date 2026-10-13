@@ -69,10 +69,9 @@ type Entry struct {
 // Outbox is a durable queue of events awaiting delivery.
 //
 // It is persisted through kv.Handle, so protean and signpost get a Badger-backed
-// outbox and pivot a Valkey-backed one with no change here. Note that a shared
-// Valkey outbox across several pivot replicas needs a claim mechanism to avoid
-// duplicate delivery, which pivot section 10.4 records as an open question;
-// this type is correct for a single consumer and is not yet that mechanism.
+// outbox and pivot a Valkey-backed one with no change here. Several pivot
+// replicas share one outbox; claims with a lease (claim.go) keep two of them
+// from delivering the same attempt.
 type Outbox struct {
 	store  kv.Handle
 	logger *log.Logger

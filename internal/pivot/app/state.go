@@ -12,11 +12,11 @@
 //
 // Three consequences run through this package. A change made through one
 // replica's admin socket has to reach the others, which is what the rule
-// version counter and its pub/sub announcement are for (§10.3). Notifications
-// must not be sent once per replica, which is what the outbox claim is for
-// (§10.4). And every value that would have been protected by Badger's
+// version counter and its pub/sub announcement are for. Notifications
+// must not be sent once per replica, which is what the outbox claim is for.
+// And every value that would have been protected by Badger's
 // encryption at rest has to be sealed by pivot before it is written, because
-// Valkey has none (§8).
+// Valkey has none.
 //
 // # Every replica needs the same secret
 //
@@ -51,14 +51,14 @@ import (
 // Name is the application name, used in logs, the CLI and the socket path.
 const Name = "pivot"
 
-// HKDF info labels, one per purpose, as §8.1 names them.
+// HKDF info labels, one per purpose.
 const (
 	// InfoCredentialEncryption derives the key that seals backend credentials
 	// and notifier configuration.
 	InfoCredentialEncryption = "pivot/credential-encryption"
 
 	// InfoCacheEncryption derives the key that seals cached responses on
-	// routes marked encrypt (§7.3).
+	// routes marked encrypt.
 	InfoCacheEncryption = cache.InfoCacheEncryption
 
 	// InfoWebhookSigning derives the webhook HMAC key. pkg/notify owns the
@@ -382,14 +382,14 @@ func (s *State) bind(
 // startBus builds the event bus and subscribes every configured notifier.
 //
 // The bus is given this replica's identity as its claim holder, which is what
-// makes one replica send each notification rather than all of them (§10.4).
+// makes one replica send each notification rather than all of them.
 func (s *State) startBus(ctx context.Context, opts Options) error {
 	settings := s.settings.load()
 
 	window := settings.NotifyDedupWindow
 	if window == 0 {
 		// Zero means every event is delivered. pivot's events are already
-		// aggregated at the source - §8.3's rule.denied and
+		// aggregated at the source - rule.denied and
 		// client.rate_limited carry counts - so collapsing on top of that
 		// would hide the second distinct incident of a minute.
 		window = -1
@@ -634,7 +634,7 @@ func (s *State) LogStartup(ctx context.Context) {
 			"set one with `pivot config set backend.url https://…`")
 	}
 
-	// §7.1's multiplication, stated rather than left in a document: scaling
+	// The concurrency limit multiplies with the replica count: scaling
 	// out raises the load the backend can see unless this is lowered to match.
 	if settings.BackendConcurrency > 0 {
 		s.Log.Info("backend concurrency limit is per replica",
@@ -642,7 +642,7 @@ func (s *State) LogStartup(ctx context.Context) {
 			"note", "the effective ceiling is this value multiplied by the replica count")
 	}
 
-	// The one configuration mistake that silently weakens §10.7: in proxy
+	// The one configuration mistake that silently weakens proxy mode: in proxy
 	// mode with no trusted set, the client address pivot records and rate
 	// limits on is the proxy's.
 	if s.Config.ProxyMode() && len(s.Config.TrustedProxies) == 0 {

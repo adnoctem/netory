@@ -36,7 +36,7 @@ const (
 const (
 	// DefaultAddressRetention bounds how long address history is kept.
 	//
-	// IP addresses are personal data (section 9.3), so this is a
+	// IP addresses are personal data, so this is a
 	// GDPR-relevant setting and not merely a housekeeping one. 90 days is the
 	// value protean ships with: long enough to investigate "when did this host
 	// last move", short enough to be defensible as a retention period, and the

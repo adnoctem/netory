@@ -110,7 +110,7 @@ func TestEndToEnd(t *testing.T) {
 			"the customer's token must never reach the backend")
 	})
 
-	// §10.6: the documented Shopware example, against a backend speaking the
+	// The documented Shopware example, against a backend speaking the
 	// Admin API's shapes. These are the paths the CVEs were about.
 	t.Run("the Shopware example denies what it is meant to", func(t *testing.T) {
 		before := stack.Backend.Count()
@@ -225,7 +225,7 @@ func TestEndToEnd(t *testing.T) {
 			"the second replica must take the cached backend token rather than fetch its own")
 	})
 
-	// §10.3's hot reload, which is the property that separates pivot from its
+	// Hot reload, which is the property that separates pivot from its
 	// single-node siblings.
 	t.Run("a rule change on one replica reaches the other", func(t *testing.T) {
 		// Allowed on both right now.
@@ -353,7 +353,7 @@ rules:
 	})
 
 	// The other two backend modes, which no Shopware deployment would
-	// exercise and which §2's backend-agnostic core requires.
+	// exercise and which a backend-agnostic core requires.
 	t.Run("the api-key backend mode works", func(t *testing.T) {
 		output := stack.MustCLI(first, "client", "add", "Key Customer",
 			"--backend-mode", "api-key",

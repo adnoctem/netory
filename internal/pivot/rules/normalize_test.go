@@ -57,7 +57,7 @@ func TestNormalize(t *testing.T) {
 }
 
 // Every one of these is a request pivot refuses rather than guesses at. An
-// ambiguous path is the precise thing §2 exists to eliminate: pivot and the
+// ambiguous path is the precise thing normalization exists to eliminate: pivot and the
 // backend's router must see the same request, and a path with two readings has
 // no single answer to forward.
 func TestNormalizeRejects(t *testing.T) {

@@ -189,7 +189,7 @@ func TestRejectsPathTraversal(t *testing.T) {
 	}
 }
 
-// §6.1 rejects symlinks and hardlinks outright. A symlink can point anywhere
+// Symlinks and hardlinks are rejected outright. A symlink can point anywhere
 // on the server's filesystem and a hardlink can alias a file outside the
 // bundle; neither has a legitimate use in a bundle of scripts.
 func TestRejectsLinks(t *testing.T) {

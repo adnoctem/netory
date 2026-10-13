@@ -175,7 +175,7 @@ func (r *RuleStore) Bump(ctx context.Context) (int64, error) {
 
 // Reloader keeps a replica's RuleTable in step with Valkey.
 //
-// This is §10.3's hot reload. The version counter in Valkey is authoritative
+// This is the hot reload. The version counter in Valkey is authoritative
 // and the pub/sub announcement is an optimisation on top of it, which is the
 // only arrangement that converges: pub/sub has no delivery guarantee, so a
 // replica that misses an announcement has to find out some other way, and a

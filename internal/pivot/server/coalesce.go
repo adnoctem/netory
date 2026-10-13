@@ -6,10 +6,9 @@ import (
 	"sync/atomic"
 )
 
-// Coalescer makes identical concurrent requests share one backend call (§4
-// step 7, §7.1).
+// Coalescer makes identical concurrent requests share one backend call.
 //
-// Per replica and in memory, which is what §7.1 specifies. Coordinating it
+// Per replica and in memory. Coordinating it
 // through Valkey would mean a round trip on the hot path to discover whether
 // another replica happens to be making the same call right now, and the window
 // in which that is true is the duration of one backend request.

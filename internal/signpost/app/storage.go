@@ -14,7 +14,7 @@ import (
 // Storage holds the bytes signpost serves.
 //
 // Release metadata lives in Badger; the script contents live behind this
-// interface (§5.1), so an S3 backend can be added later without touching the
+// interface, so an S3 backend can be added later without touching the
 // serving path. The interface is small for the same reason it was in
 // pkg/backup: a release is written once, read back, and deleted whole, so
 // nothing here needs to express anything else.

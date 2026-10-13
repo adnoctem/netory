@@ -6,7 +6,7 @@ import (
 	"github.com/adnoctem/netory/pkg/event"
 )
 
-// pivot's event taxonomy, as §8.3 defines it.
+// pivot's event taxonomy, as docs/ARCHITECTURE.md documents it.
 //
 // Every one of these is either an aggregate or an incident. There is
 // deliberately no per-request event: pivot's proxy listener carries whatever
@@ -43,7 +43,7 @@ const (
 )
 
 // EventTypes lists every event pivot emits, for `notifier` help text and for
-// the test that asserts the taxonomy matches the design document.
+// the test that asserts the taxonomy matches the documented one.
 func EventTypes() []event.Type {
 	return []event.Type{
 		EventClientAuthFailed,

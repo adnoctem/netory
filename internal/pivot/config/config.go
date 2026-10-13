@@ -356,7 +356,7 @@ func ParseTrustedProxies(raw string) ([]netip.Prefix, error) {
 //
 // Checked here rather than at the first forward leg: a backend URL with a
 // path, a query or a fragment would make the forwarded path ambiguous, and
-// §2's "pivot and the backend's router see the same request" depends on the
+// "pivot and the backend's router see the same request" depends on the
 // forwarded path being exactly the normalized one.
 func ParseBackendURL(raw string) (*url.URL, error) {
 	trimmed := strings.TrimSpace(raw)

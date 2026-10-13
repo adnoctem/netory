@@ -38,7 +38,7 @@ const (
 // AccessLogAddress selects how much of a client address is recorded.
 type AccessLogAddress string
 
-// The access-log address modes (§9.7).
+// The access-log address modes.
 const (
 	// AccessLogFull records the client address verbatim.
 	AccessLogFull AccessLogAddress = "full"
@@ -93,11 +93,11 @@ type Settings struct {
 	// ServeAlias is the alias the unversioned public routes are served from.
 	ServeAlias string `json:"serve_alias"`
 
-	// ServeVersioned enables the /v<release>/<path> routes of §5.
+	// ServeVersioned enables the /v<release>/<path> routes.
 	ServeVersioned bool `json:"serve_versioned"`
 
-	// CacheAliasMaxAge and CacheVersionMaxAge are the two halves of the §5.2
-	// cache split.
+	// CacheAliasMaxAge and CacheVersionMaxAge are the two halves of the cache
+	// split between mutable alias routes and immutable versioned ones.
 	CacheAliasMaxAge   time.Duration `json:"cache_alias_max_age"`
 	CacheVersionMaxAge time.Duration `json:"cache_version_max_age"`
 
@@ -112,8 +112,8 @@ type Settings struct {
 	// then possible only by supplying a key at publish time.
 	SigningKey string `json:"signing_key,omitempty"`
 
-	// AllowTruncationSkip permits a manifest to opt a route out of the §6.3
-	// check. Set false to reject any bundle that tries.
+	// AllowTruncationSkip permits a manifest to opt a route out of the
+	// truncation check. Set false to reject any bundle that tries.
 	AllowTruncationSkip bool `json:"allow_truncation_skip"`
 
 	// NotifyDedupWindow collapses identical events.

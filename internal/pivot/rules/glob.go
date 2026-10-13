@@ -4,7 +4,7 @@ import "strings"
 
 // matchGlob reports whether a path matches a glob pattern.
 //
-// The syntax §5.2 specifies: `*` matches within one segment, `**` across
+// The syntax: `*` matches within one segment, `**` across
 // segments, `?` matches one character within a segment. The whole path must
 // match - there is no partial match, because a rule that matched a prefix of
 // the path would allow everything underneath it by accident.

@@ -44,7 +44,7 @@ const (
 	// DefaultDatabase is the Badger directory.
 	DefaultDatabase = "/var/lib/signpost/db"
 
-	// DefaultContent is where script contents live (§5.1).
+	// DefaultContent is where script contents live.
 	DefaultContent = "/var/lib/signpost/content"
 
 	// DefaultShutdownGrace bounds a graceful shutdown.
@@ -73,7 +73,7 @@ type Config struct {
 	// honoured.
 	//
 	// It matters more here than it looks. signpost serves anonymously and has
-	// no per-source rate limiter, but §9.6 requires it to refuse to serve a
+	// no per-source rate limiter, but it refuses to serve a
 	// script over a connection it cannot confirm was encrypted - and in proxy
 	// mode the only evidence is X-Forwarded-Proto from a peer in this list.
 	// Without the list, signpost cannot distinguish a proxied HTTPS request
@@ -253,8 +253,8 @@ func (c Config) IsTrustedProxy(addr netip.Addr) bool {
 	}
 
 	// An IPv4-mapped IPv6 address must compare as IPv4, or a proxy configured
-	// as 10.0.0.0/8 would not match a connection Go reports as
-	// ::ffff:10.0.0.1.
+	// as 10.0.0.0/8 would not match a connection Go reports as:
+	// :ffff:10.0.0.1.
 	addr = addr.Unmap()
 
 	for _, prefix := range c.TrustedProxies {

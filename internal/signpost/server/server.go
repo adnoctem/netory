@@ -3,8 +3,8 @@
 // The split is the security model. The public API faces the network, serves
 // anonymously, and is read-only - there is no path on it that changes
 // anything. The admin API is a Unix domain socket whose file permissions are
-// the authorization, and it is where publishing happens. §2 calls this
-// local-only publishing: there is no remote publishing API, so there is
+// the authorization, and it is where publishing happens. Publishing is
+// local-only: there is no remote publishing API, so there is
 // nothing remote to authenticate against and nothing remote to get wrong.
 package server
 

@@ -15,10 +15,9 @@ import (
 
 // RateLimit is one client's limit.
 //
-// A token bucket rather than a sliding window, which is §10.5's decision and
-// Max's preference. The reasoning is that pivot proxies: a short burst costs
+// A token bucket rather than a sliding window, because pivot proxies: a short burst costs
 // the backend a handful of requests it can absorb, and pivot's own concurrency
-// limit (§7.1) is what actually protects production from volume. A sliding
+// limit is what actually protects production from volume. A sliding
 // window would reject a client's third request in a second even when the
 // backend is idle, which for an API whose clients page through results in
 // bursts is a limiter that fights normal use.
@@ -90,7 +89,7 @@ type Decision struct {
 	Remaining int
 
 	// RetryAfter is how long until the request would succeed, set only when
-	// it was refused. §4 requires a 429 to carry Retry-After, and a limiter
+	// it was refused. A 429 carries Retry-After, because a limiter
 	// that refused without saying when to come back leaves a client guessing
 	// or hammering.
 	RetryAfter time.Duration
@@ -98,7 +97,7 @@ type Decision struct {
 
 // Limiter applies per-client token buckets in Valkey.
 //
-// Shared across replicas, as §7.1 requires: a per-replica limiter would let a
+// Shared across replicas: a per-replica limiter would let a
 // client take its whole allowance from every replica at once, so the effective
 // limit would be the configured value multiplied by the replica count. The
 // backend concurrency limit is per replica and documented as multiplying;
@@ -112,9 +111,9 @@ type Limiter struct {
 // NewLimiter returns a limiter over a Valkey store.
 //
 // It takes the concrete store rather than kv.Store because a token bucket is a
-// read-modify-write that the interface cannot express atomically. §10.5
-// anticipated exactly this: a fixed window fits kv.Increment, and anything
-// better needs a script or an addition to the interface. A script is the
+// read-modify-write that the interface cannot express atomically: a fixed
+// window fits kv.Increment, and anything better needs a script or an addition
+// to the interface. A script is the
 // smaller change, and valkeykv.PhysicalKey keeps its keys the same ones the
 // store would use.
 func NewLimiter(store *valkeykv.Store, namespace string, now func() time.Time) (*Limiter, error) {

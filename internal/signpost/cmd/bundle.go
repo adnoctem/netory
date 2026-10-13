@@ -120,7 +120,7 @@ func newBundlePublishCommand(opts *Options) *cobra.Command {
 
 			if len(result.Release.TruncationSkipped) > 0 {
 				// Surfaced right after a successful publish, not buried: a
-				// route that opted out of the §6.3 check is the one route
+				// route that opted out of the truncation check is the one route
 				// whose partial delivery could execute.
 				fmt.Fprintf(out, "  warning:   truncation check skipped for %s\n",
 					strings.Join(result.Release.TruncationSkipped, ", "))
@@ -208,7 +208,7 @@ func newBundleValidateCommand(opts *Options) *cobra.Command {
 	return cmd
 }
 
-// validateLocally runs the §4.2 validation in this process.
+// validateLocally runs the bundle validation in this process.
 func validateLocally(
 	cmd *cobra.Command,
 	opts *Options,
@@ -493,7 +493,7 @@ func newBundleRemoveCommand(opts *Options) *cobra.Command {
 		Aliases: []string{"rm"},
 		Long: "Deletes a release and its stored content.\n\n" +
 			"Refused while any alias points at it, because the routes that alias serves would\n" +
-			"otherwise resolve to nothing. Note that §8.1 expects releases to be retained so any\n" +
+			"otherwise resolve to nothing. Releases are normally retained so any\n" +
 			"script ever served can be reproduced for an audit - removing one is a deliberate\n" +
 			"departure from that, not routine housekeeping.",
 		Args: cobra.ExactArgs(1),

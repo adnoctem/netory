@@ -43,7 +43,7 @@ const (
 // in full.
 //
 // Every mutation ends by invalidating, which bumps the rule version and
-// announces it. That is what makes §3's promise true - a change made through
+// announces it. That is what makes a change made through
 // one replica's socket applies to all of them - and it is why there is no
 // route here that writes without it.
 func (s *Server) adminHandler() http.Handler {
@@ -854,7 +854,7 @@ type RuleTestResponse struct {
 
 	// Path is the normalized path, which is the one the rules matched. Worth
 	// returning: the difference between what was typed and what was matched
-	// is exactly the thing §2 is about.
+	// is exactly what path normalization is about.
 	Path       string `json:"path"`
 	Normalized bool   `json:"normalized"`
 
@@ -1349,7 +1349,7 @@ func translate(err error) error {
 // peerName renders the socket peer for an audit record.
 //
 // Taken from the kernel through SO_PEERCRED rather than from anything the
-// request claimed, which is what makes the "who" in §9.2's audit trail worth
+// request claimed, which is what makes the "who" in the audit trail worth
 // recording at all.
 func peerName(r *http.Request) string {
 	peer, ok := admin.PeerFrom(r.Context())

@@ -12,7 +12,7 @@ import (
 	"golang.org/x/crypto/blake2b"
 )
 
-// minisign signature verification (§6.2, resolving §9.4).
+// minisign signature verification.
 //
 // signpost verifies; it never signs. The operator signs a bundle out of band
 // with the standard `minisign` CLI, which is widely packaged, and signpost

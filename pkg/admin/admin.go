@@ -21,8 +21,8 @@
 //
 // # Identity for the audit log
 //
-// All three services must record who performed an administrative action
-// (protean section 9.2, signpost section 8.1, pivot section 9.2). Over a Unix
+// All three services must record who performed an administrative action.
+// Over a Unix
 // socket the kernel will answer that question directly, via SO_PEERCRED, so
 // Peer carries the connecting process's real uid, gid and pid. That is an
 // identity the caller cannot assert for itself, which is what makes it worth
@@ -51,8 +51,8 @@ const MaxRequestBytes = 8 << 20 // 8 MiB
 // Error is a structured administrative error.
 //
 // Hint is separate from Message because the two are for different moments: the
-// message says what went wrong, the hint says what to do about it. All three
-// design documents require user-facing messages to carry a hint, and keeping
+// message says what went wrong, the hint says what to do about it. Every
+// user-facing message carries a hint, and keeping
 // them apart means the CLI can render the hint on its own line while errors.Is
 // and %w keep working against the message.
 type Error struct {

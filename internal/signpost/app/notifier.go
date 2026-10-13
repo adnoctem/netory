@@ -100,7 +100,7 @@ func (n *Notifiers) List(ctx context.Context) ([]notify.Config, error) {
 	}
 
 	// Sorted here rather than relying on Scan, which kv.Store documents as
-	// returning entries in unspecified order (§9.8).
+	// returning entries in unspecified order.
 	sort.Slice(configs, func(i, j int) bool { return configs[i].Name < configs[j].Name })
 
 	return configs, nil

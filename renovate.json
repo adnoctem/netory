@@ -13,7 +13,7 @@
       "matchPackageNames": ["rules_go", "gazelle"],
       "groupName": "bazel go rules",
       "minimumReleaseAge": "3 days",
-      "description": "rules_go and gazelle are version-coupled and were verified together against the pinned Bazel LTS (see docs/design/protean.md section 10). Bumping one without the other is how that verification silently stops holding, so they land as one reviewable PR."
+      "description": "rules_go and gazelle are version-coupled and are verified together against the pinned Bazel release, so they land as one reviewable PR."
     },
     {
       "matchManagers": ["gomod"],

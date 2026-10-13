@@ -101,9 +101,9 @@ func Object(typ reflect.Type, properties map[string]Property) map[string]any {
 		//
 		// Not when the property already says what it accepts in another way.
 		// A `oneOf` over a string and an integer with `"type": "integer"`
-		// added beside it rejects the string, because both apply - which is
-		// how a time.Duration written as "5m" came to be refused by a schema
-		// that was meant to allow it.
+		// added beside it rejects the string, because both apply - so a
+		// time.Duration written as "5m" would be refused by a schema meant to
+		// allow it.
 		if _, hasType := property["type"]; !hasType && !constrainsType(property) {
 			property["type"] = JSONType(field.Type)
 		}

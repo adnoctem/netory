@@ -8,8 +8,8 @@ The constraint that drives every decision here: **the served bytes are executed 
 client, unreviewed.** Immutable releases, atomic alias swaps, extraction hardening, truncation
 protection and HTTPS-only serving all follow from that one fact.
 
-For scope, architecture and the reasoning, read [`docs/design/signpost.md`](../../docs/design/signpost.md).
-This file is how to run it.
+How signpost works internally - validation, releases, integrity checks and its known limitations - is
+described in the [Architecture](../../docs/ARCHITECTURE.md#signpost). This file is how to run it.
 
 ## Installation
 

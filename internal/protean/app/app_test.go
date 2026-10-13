@@ -204,8 +204,8 @@ func TestHostsRecordUpdate(t *testing.T) {
 	asrt.Empty(got.LastIPv6, "an empty address must not overwrite the other family")
 	asrt.False(got.LastUpdateAt.IsZero())
 
-	// The other family updates independently, which is what section 6.3
-	// requires: AAAA records are updated separately from A.
+	// The other family updates independently: AAAA records are updated
+	// separately from A.
 	require.NoError(t, hosts.RecordUpdate(ctx, "dyn.example.org", "", "2001:db8::1"))
 
 	got, err = hosts.Get(ctx, "dyn.example.org")

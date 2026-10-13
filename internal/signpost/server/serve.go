@@ -16,7 +16,7 @@ import (
 // Headers signpost sets on every served script.
 const (
 	// HeaderContentTypeOptions stops a browser from sniffing a script into
-	// something it can execute in a page (§5.2).
+	// something it can execute in a page.
 	HeaderContentTypeOptions = "X-Content-Type-Options"
 
 	// HeaderRelease tells a client which release it just received, which is
@@ -35,7 +35,7 @@ const checksumContentType = "text/plain; charset=utf-8"
 // publicHandler builds the network-facing mux.
 //
 // Three routes exist: the health endpoint, and everything else. There is no
-// index and no listing - §5.2 requires an unknown path to 404 without
+// index and no listing - an unknown path returns 404 without
 // revealing what is available, because a list of install scripts is a list of
 // what this organisation deploys.
 func (s *Server) publicHandler() http.Handler {
@@ -97,8 +97,8 @@ func (s *Server) handleScript(w http.ResponseWriter, r *http.Request) {
 
 	// HTTPS before anything else, including before the path is resolved.
 	//
-	// §6.2 requires that plain HTTP is not served scripts, and §9.6 explains
-	// why it has to be enforced rather than preferred: the client is about to
+	// Plain HTTP is not served scripts, and it has to be enforced rather
+	// than preferred: the client is about to
 	// pipe the response into a shell, and a downgrade that silently succeeds
 	// is the one failure this service exists to prevent. Checked first so a
 	// plaintext request cannot even learn which paths exist.
@@ -170,7 +170,7 @@ func (s *Server) writeScript(
 
 	// Content-Length rather than chunked, and it matters here more than it
 	// usually does: a client piping into a shell can only detect a truncated
-	// download if it was told how much to expect. The §6.3 wrapper check is
+	// download if it was told how much to expect. The truncation check is
 	// the belt; this is the braces.
 	header.Set("Content-Length", strconv.Itoa(len(content)))
 
@@ -283,7 +283,7 @@ func transportHint(state forwarded.State, enforced, proxyMode bool) string {
 
 // fail writes a status with no body and no detail.
 //
-// Unknown paths return 404 without listing available routes (§5.2), and the
+// Unknown paths return 404 without listing available routes, and the
 // same reasoning applies to every other failure on the public listener: the
 // client is anonymous, and nothing it is told helps it more than it helps
 // someone mapping the service.
@@ -296,7 +296,7 @@ func (s *Server) fail(w http.ResponseWriter, status int) {
 //
 // Strong rather than weak, and quoted: the digest identifies the bytes exactly,
 // which is what a strong validator asserts. Derived from the content hash
-// (§5.2) rather than from a timestamp, so a republished identical file keeps
+// rather than from a timestamp, so a republished identical file keeps
 // its validator and a changed one cannot keep it by accident.
 func etag(digest string) string { return `"` + digest + `"` }
 
@@ -327,7 +327,7 @@ func etagMatches(header, digest string) bool {
 
 // cacheControl renders the cache lifetime for a resolution.
 //
-// This is the §5.2 split, and the reason for it is mutability rather than
+// The cache-lifetime split, and the reason for it is mutability rather than
 // taste: an alias route changes meaning at the next publish, so a long cache
 // would keep serving a release a rollback was meant to retract. A versioned
 // route cannot change by construction, so it is immutable and cacheable for as

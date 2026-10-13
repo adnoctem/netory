@@ -14,8 +14,7 @@
 // badgerkv callers can store a credential and rely on the store to protect it.
 // Valkey offers no equivalent, and this package deliberately does not pretend
 // otherwise: it stores exactly the bytes it is given. pivot encrypts the
-// values that need it before they reach this package, as its design document
-// §8 sets out. A caller that hands a plaintext credential to this store has
+// values that need it before they reach this package. A caller that hands a plaintext credential to this store has
 // written a plaintext credential to Valkey.
 //
 // # Client-side caching is available and unused
@@ -25,7 +24,7 @@
 // rate-limit counters, token records and outbox claims - state whose whole
 // purpose is to be shared and current across replicas - and a cached read of
 // any of them is a rate limit that does not limit or a revoked token that
-// still works. pivot's response cache (§7.2) is a different thing built on
+// still works. pivot's response cache is a different thing built on
 // top of this store, not a property of the store itself.
 package valkeykv
 

@@ -204,7 +204,7 @@ func flush(t *testing.T, addr, prefix string) {
 	}
 }
 
-// TestConformance is the acceptance criterion pivot §10.9 names: the Valkey
+// TestConformance is the Valkey store's acceptance criterion: the Valkey
 // store is a kv.Store exactly insofar as it passes the same suite the Badger
 // store passes.
 func TestConformance(t *testing.T) {

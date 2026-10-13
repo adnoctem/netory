@@ -1,5 +1,5 @@
-// Package cache is pivot's response cache (§7.2) and its optional per-route
-// encryption (§7.3).
+// Package cache is pivot's response cache and its optional per-route
+// encryption.
 //
 // # What is cached, and what is never cached
 //
@@ -10,7 +10,7 @@
 // leak rather than a performance regression.
 //
 // The key always covers the client, so two customers cannot share an entry.
-// §7.2 allows a route to be marked shared, which drops the client from the
+// A route can be marked shared, which drops the client from the
 // key, and that flag is the one setting in this package that can leak data
 // between customers if it is wrong - two clients with different backend
 // permissions can get different responses from one path. It is an operator
@@ -30,7 +30,7 @@ import (
 )
 
 // InfoCacheEncryption is the HKDF label the per-route sealing key is derived
-// under, as §8.1 names it.
+// under.
 const InfoCacheEncryption = "pivot/cache-encryption"
 
 // MaxBodyBytes bounds a cacheable response body.
@@ -110,7 +110,7 @@ func FilterHeaders(header http.Header) http.Header {
 // Storable reports whether a backend response may be cached, and why not when
 // it may not.
 //
-// §7.2 requires Cache-Control: no-store and private to be honoured. They are
+// Cache-Control: no-store and private are honoured. They are
 // the backend telling pivot that this response is not shareable, and a proxy
 // that ignored that would be caching whatever the backend was careful about.
 func Storable(status int, header http.Header, bodyLen int) (bool, string) {

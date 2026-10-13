@@ -33,7 +33,7 @@ func TestConcurrencyCapsInFlightCalls(t *testing.T) {
 	assert.Equal(t, int64(3), inFlight)
 	assert.Equal(t, 3, limit)
 
-	// The fourth waits and then gives up, which §4 maps to a 503.
+	// The fourth waits and then gives up, which the pipeline answers with a 503.
 	start := time.Now()
 
 	_, err := limiter.Acquire(ctx)

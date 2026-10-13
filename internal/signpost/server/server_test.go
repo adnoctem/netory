@@ -231,7 +231,7 @@ func TestServesAScript(t *testing.T) {
 	asrt.Equal(http.StatusOK, response.Code)
 	asrt.Contains(response.Body.String(), "echo hello")
 
-	// §5.2's response behaviour, in full.
+	// The response behaviour, in full.
 	asrt.Equal("text/x-shellscript; charset=utf-8", response.Header().Get("Content-Type"))
 	asrt.Equal("nosniff", response.Header().Get("X-Content-Type-Options"))
 	asrt.Equal("1.0.0", response.Header().Get("X-Signpost-Release"))
@@ -240,7 +240,7 @@ func TestServesAScript(t *testing.T) {
 		"a client piping into a shell can only detect a truncated download if it was told the length")
 }
 
-// §6.2: plain HTTP requests are not served scripts. This is the one check
+// Plain HTTP requests are not served scripts. This is the one check
 // whose absence would defeat the service's purpose, so it is asserted in every
 // deployment shape.
 func TestRefusesToServeWithoutConfirmedHTTPS(t *testing.T) {
@@ -263,7 +263,7 @@ func TestRefusesToServeWithoutConfirmedHTTPS(t *testing.T) {
 	t.Run("proxy mode with no trusted proxies", func(t *testing.T) {
 		t.Parallel()
 
-		// The §9.6 case: signpost receives plain HTTP by design and has no
+		// The proxy case: signpost receives plain HTTP by design and has no
 		// declared proxy, so it cannot tell a proxied HTTPS request from a
 		// direct plaintext one. It refuses rather than guesses.
 		srv, state := newServer(t, nil)
@@ -384,7 +384,7 @@ func TestChecksumRoute(t *testing.T) {
 	asrt.NotEqual(get(t, srv, "/install.sh").Header().Get("ETag"), response.Header().Get("ETag"))
 }
 
-// §5.2's cache split follows from the mutability split: an alias route can
+// The cache split follows from the mutability split: an alias route can
 // change at any publish, a versioned route cannot change at all.
 func TestCacheControlSplit(t *testing.T) {
 	t.Parallel()

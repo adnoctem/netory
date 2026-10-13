@@ -155,7 +155,7 @@ type ReleaseResponse struct {
 	SignatureKey  string          `json:"signature_key,omitempty"`
 	SignatureNote string          `json:"signature_note,omitempty"`
 
-	// TruncationSkipped names routes published without the §6.3 check. It is
+	// TruncationSkipped names routes published without the truncation check. It is
 	// in the list output rather than only in the stored record because a
 	// bundle that skipped the check must stay visible afterwards.
 	TruncationSkipped []string `json:"truncation_skipped,omitempty"`
@@ -423,7 +423,7 @@ func publishError(err error) error {
 	}
 }
 
-// isTruncation reports whether err is a §6.3 failure.
+// isTruncation reports whether err is a truncation-check failure.
 func isTruncation(err error) bool {
 	var truncation *bundle.TruncationError
 
@@ -1010,7 +1010,7 @@ const outboxPageSize = 100
 // peerName renders the socket peer for an audit record.
 //
 // Taken from the kernel through SO_PEERCRED rather than from anything the
-// request claimed, which is what makes the "who" in §8.1's audit trail worth
+// request claimed, which is what makes the "who" in the audit trail worth
 // recording at all.
 func peerName(r *http.Request) string {
 	peer, ok := admin.PeerFrom(r.Context())

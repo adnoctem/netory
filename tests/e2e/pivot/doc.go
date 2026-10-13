@@ -12,8 +12,7 @@
 // server start` processes, configured only through `pivot` subcommands over
 // their admin sockets, driven over HTTP.
 //
-// It is also where pivot's design document §10.6 is answered. The Shopware
-// rule set was written against known CVEs rather than against an enumerated
+// It is also what verifies the Shopware example. That rule set is written against known CVEs rather than against an enumerated
 // route list, so what can be verified without deploying Shopware itself is
 // that the documented example behaves as intended against a backend speaking the Admin
 // API's shapes: its oauth2 token endpoint, its entity routes, and its search

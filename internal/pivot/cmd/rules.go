@@ -15,16 +15,11 @@ import (
 
 // newRulesCommand builds `pivot rules`.
 //
-// §3.1 drafted validate|list|test, which left no way to install a rule set -
-// and without one the service cannot work at all, since a fresh pivot denies
-// everything. `apply` is therefore added.
-//
-// It installs a document the operator supplies and nothing else. pivot used to
-// ship a Shopware rule set as a `--preset`, and no longer does: a rule set is a
-// statement about what one installation will serve, and one compiled into the
-// binary is a statement nobody reviewed that is applied by a single command.
-// The example lives in docs/examples/pivot/ instead, where it can be read and
-// edited before it is applied.
+// `apply` installs a document the operator supplies and nothing else: a fresh
+// pivot denies everything, and pivot ships no rule set of its own. A rule set
+// is a statement about what one installation will serve, so the examples live
+// in docs/examples/pivot/, where they are read and edited before being
+// applied.
 func newRulesCommand(opts *Options) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "rules",

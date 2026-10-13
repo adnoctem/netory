@@ -45,7 +45,7 @@ func (d Decision) Allowed() bool { return d.Outcome.Allowed() }
 
 // Evaluate applies the rule set to a method and an already-normalized path.
 //
-// The order is deny, then allow, then deny-by-default, exactly as §2 states.
+// The order is deny, then allow, then deny-by-default.
 // Deny first is what makes a deny rule unconditional: were allow evaluated
 // first and allowed to win, the question "is this path denied" would depend on
 // the order two lists happened to be written in.
@@ -53,7 +53,7 @@ func (d Decision) Allowed() bool { return d.Outcome.Allowed() }
 // The path must already be normalized. Evaluate does not normalize, because a
 // caller that passed a raw path and got an answer would have matched a rule
 // against a different string from the one pivot forwards - the precise failure
-// §2 exists to prevent. The pipeline normalizes once, at the top.
+// normalization exists to prevent. The pipeline normalizes once, at the top.
 func (s *Set) Evaluate(method, normalizedPath string) Decision {
 	if !IsForwardable(method) {
 		return Decision{Outcome: OutcomeMethodRefused}
@@ -127,13 +127,12 @@ func (s *Set) Empty() bool { return len(s.allow) == 0 }
 
 // Merge combines a global rule set with one client's additions.
 //
-// This is §10.2's model, and it is strictly accumulative: the deny lists are
+// The combination is strictly accumulative: the deny lists are
 // concatenated and the allow lists are concatenated, so a client's rules can
 // add permissions the global set does not grant and can add restrictions of
 // their own - but a client rule can never reopen a path the global set denies.
 //
-// Max asked whether a per-client exception to a global deny would be useful.
-// It is deliberately not offered. The global deny list is the reviewed
+// A per-client exception to a global deny is deliberately not offered. The global deny list is the reviewed
 // statement of what this instance will never serve, and an override makes that
 // statement conditional on a per-customer record nobody re-reads: the failure
 // is silent, affects one customer, and is invisible in the global list. With

@@ -10,8 +10,8 @@ import (
 // DefaultBackendConcurrency is how many backend calls one replica makes at
 // once.
 //
-// §7.1 is explicit that this is the mechanism which actually protects
-// production, and equally explicit about its cost: it is enforced per replica,
+// This is the mechanism which actually protects production, and it has a
+// cost: it is enforced per replica,
 // so the effective ceiling is this value multiplied by the replica count.
 // Scaling pivot out therefore raises the load the backend can see unless this
 // is lowered to match, which is why the startup log states the figure and the
@@ -26,8 +26,8 @@ const DefaultBackendConcurrency = 16
 // given up.
 const DefaultAcquireTimeout = 5 * time.Second
 
-// ErrNoSlot is returned when no backend slot became free in time. §4 maps it
-// to a 503.
+// ErrNoSlot is returned when no backend slot became free in time. The pipeline
+// answers it with a 503.
 var ErrNoSlot = errors.New("server: no backend slot became free")
 
 // Concurrency caps simultaneous backend calls for one replica.

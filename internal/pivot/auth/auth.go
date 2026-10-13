@@ -1,11 +1,10 @@
 // Package auth is pivot's two authentication sides.
 //
-// §6 splits them deliberately and so does this package. The frontend side
+// The two are separate, and so is this package. The frontend side
 // decides which pivot client a customer request belongs to, from credentials
 // pivot itself issued. The backend side puts pivot's own credentials on the
 // forward leg. Neither knows about the other, and a customer never holds a
-// backend credential - that is what §2 means by "credentials never leave
-// pivot".
+// backend credential - credentials never leave pivot.
 //
 // Nothing here touches Valkey. The frontend mechanics are header parsing,
 // hashing and the OAuth2 wire shapes; the backend mechanics are setting an
@@ -61,7 +60,7 @@ func GenerateSecret() (string, error) { return randomString(SecretBytes) }
 
 // GenerateToken returns a new opaque access token.
 //
-// Opaque rather than a JWT, as §6.1 specifies. A self-contained token cannot
+// Opaque rather than a JWT. A self-contained token cannot
 // be revoked before it expires without a revocation list, which is a stored
 // record per token - exactly the thing a JWT was supposed to avoid. An opaque
 // token is already a lookup, so revoking it is deleting one key.
@@ -111,7 +110,7 @@ func Equal(a, b string) bool {
 	return subtle.ConstantTimeCompare([]byte(a), []byte(b)) == 1
 }
 
-// FrontendMode is how customers authenticate to pivot (§6.1).
+// FrontendMode is how customers authenticate to pivot.
 type FrontendMode string
 
 // The frontend modes.

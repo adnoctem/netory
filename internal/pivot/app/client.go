@@ -30,7 +30,7 @@ var clientName = regexp.MustCompile(`^[A-Za-z0-9 ._@-]+$`)
 
 // Client is one customer of pivot.
 //
-// The two layers of §1 meet in this record: Rules is the first layer, and
+// pivot's two access-control layers meet in this record: Rules is the first layer, and
 // Backend is the credential that carries the second. Neither is sufficient
 // alone, which is why both live here rather than one being derived from the
 // other.
@@ -47,16 +47,15 @@ type Client struct {
 	// shown once at creation and cannot be recovered.
 	SecretHash string `json:"secret_hash"`
 
-	// Backend is this client's own backend credentials. §6.2 requires one set
-	// per client: a customer's requests reach the backend as that customer's
+	// Backend is this client's own backend credentials, one set per client: a customer's requests reach the backend as that customer's
 	// own integration, with that integration's permissions.
 	Backend auth.BackendConfig `json:"-"`
 
 	// SealedBackend is Backend encrypted, which is how it is stored. Valkey
-	// has no encryption at rest (§8), so this is pivot's own.
+	// has no encryption at rest, so this is pivot's own.
 	SealedBackend []byte `json:"sealed_backend,omitempty"`
 
-	// Rules are this client's additions to the global rule set (§10.2).
+	// Rules are this client's additions to the global rule set.
 	// Accumulative: they can grant paths the global set does not and add
 	// restrictions of their own, but cannot reopen a globally denied path.
 	Rules *rules.Document `json:"rules,omitempty"`
@@ -136,8 +135,8 @@ func (c Client) Redacted() map[string]string {
 
 // Clients persists Client records.
 //
-// The backend credentials in these records are why §8 lists pivot as
-// encrypting values itself: Valkey offers no encryption at rest, so a Valkey
+// The backend credentials in these records are why pivot encrypts values
+// itself: Valkey offers no encryption at rest, so a Valkey
 // snapshot or a RDB file on disk would otherwise hold every customer's backend
 // integration credentials in the clear.
 type Clients struct {
@@ -363,7 +362,7 @@ func (c *Clients) SetDisabled(ctx context.Context, id string, disabled bool) err
 // List returns every client, sorted by name then id.
 //
 // Sorted here rather than relying on the store, which documents Scan's order
-// as unspecified (§8.2) - and on Valkey a SCAN genuinely has none.
+// as unspecified - and on Valkey a SCAN genuinely has none.
 func (c *Clients) List(ctx context.Context) ([]Client, error) {
 	var clients []Client
 

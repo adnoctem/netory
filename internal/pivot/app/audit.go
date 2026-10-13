@@ -28,7 +28,7 @@ const (
 	anonymiseIPv6Bits = 48
 )
 
-// AuditKind separates the two things §9.2 asks pivot to record.
+// AuditKind separates the two kinds of record pivot keeps.
 type AuditKind string
 
 // The audit kinds.
@@ -77,14 +77,14 @@ type AuditRecord struct {
 //
 // # What is stored here and what is not
 //
-// §9.2 asks for two things, and they have very different volumes. The
+// The audit trail has two parts with very different volumes. The
 // per-request audit log - client, method, normalized path, matched rule,
 // status, latency - is one record per request, so it goes to the structured
 // log where an operator's log pipeline can handle the volume and the
 // retention. What is stored here is the low-volume half: administrative
 // actions, and security-relevant outcomes that are already aggregated.
 //
-// That split is also what makes §10.8's retention promise real. pivot cannot
+// That split is also what makes the retention period enforceable. pivot cannot
 // enforce a period on records that leave the process, but it can on the ones
 // it holds - these carry a kv TTL, so the ninety days is enforced by the store
 // rather than asserted in a document.
@@ -217,7 +217,7 @@ func (a *Audit) Security(ctx context.Context, actor, action, subject string, det
 
 // List returns the stored records, newest first, at most limit of them.
 //
-// A namespace walk, which §8.2 says belongs on an administrative path. The
+// A namespace walk, which is only acceptable on an administrative path. The
 // records are bounded by the retention period rather than by volume, which is
 // the other half of why the per-request log is not stored here: ninety days of
 // per-request records would make this scan unusable.

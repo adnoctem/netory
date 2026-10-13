@@ -31,9 +31,8 @@ import (
 	"time"
 )
 
-// Type identifies what happened. Each service declares its own constants - the
-// taxonomies are in protean section 8.1, signpost section 7.2 and pivot
-// section 8.3 - so this package stays agnostic about them.
+// Type identifies what happened. Each service declares its own constants, so
+// this package stays agnostic about them.
 type Type string
 
 // Event is something that happened, recorded for delivery.

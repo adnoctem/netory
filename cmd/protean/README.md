@@ -7,8 +7,8 @@ protean owns no DNS data. Every record it touches lives at Cloudflare, Route 53 
 the provider stays the source of truth — protean is a translation layer between authenticated update
 requests and a provider API.
 
-For scope, architecture and the reasoning behind the decisions, read
-[`docs/design/protean.md`](../../docs/design/protean.md). This file is how to run it.
+How protean works internally - providers, storage, backups and its known limitations - is described in the
+[Architecture](../../docs/ARCHITECTURE.md#protean). This file is how to run it.
 
 ## Installation
 
@@ -117,7 +117,7 @@ username does not loosen scoping.
 >
 > Doing it anyway gets `badauth`, and the server log says exactly why.
 
-Parameters, per [§6.2](../../docs/design/protean.md#62-dyndns2-endpoint):
+Parameters, as the [update API](../../docs/ARCHITECTURE.md#update-api) defines them:
 
 | Parameter  | Meaning                                                                                  |
 | ---------- | ---------------------------------------------------------------------------------------- |
@@ -139,7 +139,7 @@ proxy's access log without parsing bodies; clients read the body and are unaffec
 
 ## TLS
 
-Both modes are supported, and the choice is yours ([§4.1](../../docs/design/protean.md#41-tls-termination)).
+Both modes are supported, and the choice is yours ([TLS and forwarded headers](../../docs/ARCHITECTURE.md#tls-and-forwarded-headers)).
 TLS is not optional in either: HTTP Basic sends the token on **every** request.
 
 **Native TLS** — `--tls-cert` and `--tls-key`. The TCP peer is the client, and `X-Forwarded-For` is
@@ -357,8 +357,8 @@ mode are not settings, so `config get` would never have shown them.
 | `events.auth_failure_threshold` | `5`     | failures before an `auth.failed` event                  |
 | `events.dedup_window`           | `0`     | window collapsing identical events; `0` uses one minute |
 
-The 90-day address-history default is a GDPR-relevant choice, not just housekeeping: IP addresses
-are personal data. See [§10.6](../../docs/design/protean.md).
+The 90-day address-history default is a GDPR-relevant setting, not just housekeeping: IP addresses
+are personal data. See the [GDPR notes](../../docs/ARCHITECTURE.md#gdpr).
 
 The per-source limit is applied **before** authentication, because its job is to slow down someone
 guessing tokens — a limit applied only after a successful authentication would never see them.
@@ -392,10 +392,10 @@ derived from it with HKDF-SHA256 under a purpose-specific label — `protean/kv-
 `protean/webhook-signing` — so a compromised webhook key reveals nothing about the database key. The
 raw secret is never handed to a consumer, and never used directly as the Badger encryption key.
 
-`protean secret rotate` is **not implemented**. Re-keying means re-encrypting the whole database,
-and Badger's key-registry behaviour is recorded as unverified in
-[§10.3](../../docs/design/protean.md). A rotation that half-succeeds leaves a database nothing can open, which
-is worse than one that has not been rotated. To rotate by hand, with the server stopped: export,
+`protean secret rotate` is **not implemented**. Re-keying means re-encrypting the whole database, and
+how Badger's key registry behaves under re-keying is unverified ([known limitations](../../docs/ARCHITECTURE.md#protean-known-limitations)).
+A rotation that half-succeeds leaves a database nothing can open, which is worse than one that has not been
+rotated. To rotate by hand, with the server stopped: export,
 start with the new secret, re-import.
 
 > [!WARNING] Lose the secret and you lose the database

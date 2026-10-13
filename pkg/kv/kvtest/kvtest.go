@@ -491,8 +491,8 @@ func testClosed(t *testing.T, newStore Factory) {
 	asrt.ErrorIs(err, kv.ErrClosed)
 }
 
-// testConcurrentNamespaces is the regression test for the defect this package
-// was created to prevent.
+// testConcurrentNamespaces guards against the namespace race a mutable
+// current namespace allows.
 //
 // gopskit's kv keeps the active namespace in a mutable field and moves it with
 // SetNamespace, so "write to alpha" is two steps - set the namespace, then

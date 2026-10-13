@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// Truncation protection (§6.3).
+// Truncation protection.
 //
 // A connection that drops mid-download can hand a shell half a script, and
 // `curl … | sh` will run that half. The defence is structural: all logic lives

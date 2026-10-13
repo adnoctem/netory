@@ -5,8 +5,10 @@ module(
     repo_name = "com_github_adnoctem_netory",
 )
 
-# Bazel 9.2.0 (see .bazelversion) is verified against this pair; see
-# docs/design/protean.md section 10 for what was exercised.
+# rules_go and Gazelle are version-coupled and are updated together with the
+# Bazel release in .bazelversion. With Bazel 9 there is no WORKSPACE; rules_go
+# cannot combine its race instrumentation with `pure`, which is why the two are
+# separate configurations in .bazelrc.
 bazel_dep(name = "rules_go", version = "0.64.1", repo_name = "io_bazel_rules_go")
 bazel_dep(name = "gazelle", version = "0.54.0", repo_name = "bazel_gazelle")
 

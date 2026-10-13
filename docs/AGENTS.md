@@ -2,13 +2,19 @@
 
 netory is three Go services - `protean`, `signpost`, `pivot` - in one Bazel/Bzlmod monorepo, MIT
 licensed, with no cgo. Linux is the only supported server platform; the CLIs are built for macOS
-too, for the subcommands that need no server. Read
-[CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow and
-[IMPLEMENTATION.md](IMPLEMENTATION.md) for build order and the decisions shared across all three.
+too, for the subcommands that need no server.
 
-The design documents in [`design/`](design/) are the **source of truth for scope, architecture and
-decisions**. They are living documents: each closes with a §10 "Open Questions & Verification
-Items", and **when you resolve one, update the document in the same change**.
+- [ARCHITECTURE.md](ARCHITECTURE.md) describes how the services work, what they share and their known
+  limitations. **Update it in the same change as the behaviour it describes.**
+- [CONTRIBUTING.md](CONTRIBUTING.md) is the development workflow, the code conventions and the release
+  procedure.
+- [TODO.md](TODO.md) holds open work and unverified behaviour. Remove an item when it is done; add one when
+  something is left unverified.
+- [SECURITY.md](SECURITY.md) holds the trust boundaries; keep it accurate when they change.
+
+Documentation describes the project as it is. Do not record how a decision was reached, what failed along the
+way or who asked for what - in documents or in code comments. A comment explains the constraint the code depends
+on, not its history.
 
 ## Repository tasks
 
@@ -34,15 +40,13 @@ findings, and rerun after a hook modifies files. For implementation changes run
 Three things catch people out, in roughly this order:
 
 - **Run gazelle after adding or moving a Go file, before `bazel test`.** A test file gazelle has not
-  seen is not in any target, and `bazel test` then passes without running it. That has happened
-  here: a test file written after the last gazelle run was absent from the committed target and the
-  suite went green without it.
+  seen is not in any target, and `bazel test` then passes without running it.
 - **`--config=race` cannot be the default.** rules_go's race instrumentation requires cgo, and the
   release configuration disables it. CI runs both configurations; so should you.
 - **The Valkey-backed suites share one server.** `pkg/kv/valkeykv`, `internal/pivot/app` and
   `internal/pivot/server` each take their own logical database, and each cleans up only its own key
-  prefixes. Never add a `SCAN *` plus `DEL`: one did exactly that and deleted another suite's keys
-  mid-run, which presented as a failure in the suite that was innocent.
+  prefixes. Never add a `SCAN *` plus `DEL`: it deletes another suite's keys mid-run, and the failure
+  shows up in that other suite.
 
 ## Architecture and public APIs
 
@@ -51,9 +55,9 @@ Three things catch people out, in roughly this order:
 - `pkg/` is the shared foundation: one `kv.Store` interface with a Badger and a Valkey
   implementation, and `pkg/kv/kvtest` is the conformance suite **every implementation must pass**.
   A new store is finished when that suite passes under `--config=race`, not when it compiles.
-- Each service's user-facing documentation is `cmd/<service>/README.md`, beside its entrypoint. The
-  design document says why the service is the way it is; the README says how to use it. Do not
-  duplicate a design document into a README.
+- Each service's user-facing documentation is `cmd/<service>/README.md`, beside its entrypoint.
+  ARCHITECTURE.md says how the service works; the README says how to use it. Link between them
+  rather than duplicating either.
 - The two JSON Schemas under `docs/schema/` are **generated** from the Go types that validate the
   documents they describe, through the shared `pkg/schema`. After changing a signpost manifest type
   or a pivot rule-document type, regenerate the committed file in the same change with
@@ -62,9 +66,8 @@ Three things catch people out, in roughly this order:
 - Services hold credentials, so two layers must fail before anything is exposed. Keep it that way:
   do not collapse a check because another one already covers it.
 - **No bundled defaults.** A configuration a service would install on an operator's behalf belongs
-  in `docs/examples/` as a document they copy, read and edit - not in a Go constant. pivot used to
-  carry a Shopware rule set as a `--preset`; it does not any more, and a new one should not appear.
-  Examples are kept honest by tests that compile every file in that directory.
+  in `docs/examples/` as a document they copy, read and edit - not in a Go constant. Tests compile
+  every file in that directory.
 - Badger takes a single writer, so protean and signpost are single-replica by construction. pivot is
   the multi-replica one, and everything it stores is in Valkey.
 - Valkey has **no encryption at rest**. Anything sensitive pivot stores is sealed with `pkg/seal`
@@ -78,11 +81,13 @@ Three things catch people out, in roughly this order:
 - **No cgo.** The release configuration sets `pure`, so a cgo dependency does not merely offend a
   preference - it cannot be released. Check before proposing one: a library whose Go client is a
   wrapper around a C FFI (Valkey GLIDE, for instance) is disqualified for that reason alone.
-- **Ask before adding any dependency no design document names.** This is explicit in all three
-  design documents, and it applies to Go modules and Bazel modules alike.
-- Comments explain why, not what. A comment that restates the line above it is noise; a comment
-  recording a decision, a constraint or a hazard is the reason the next reader does not repeat a
-  mistake. Where a test exists because of a specific bug, say which.
+- **Ask before adding a dependency** that is not already in `go.mod` or `MODULE.bazel`, Go module or
+  Bazel module alike. It must build with cgo disabled and carry an MIT-compatible licence.
+- Return errors wrapped with `%w`; do not panic. Third-party libraries sit behind interfaces this
+  repository owns. Where a policy decision exists, deny by default.
+- Comments explain why, not what: the constraint, hazard or behaviour the code depends on. A comment
+  that restates the line above it is noise. Where a test guards against a specific failure, say which.
+  Do not cite document sections from code; describe the behaviour in place.
 - Shell follows the shape libsh established and gopskit's scripts use: `set -euo pipefail`, the
   libsh preamble, `<domain>-<verb>[-<object>].sh` filenames with a matching `<domain>_<verb>::`
   function namespace, and a `#####` comment block over each function giving its Arguments, Outputs
@@ -134,8 +139,8 @@ Three things catch people out, in roughly this order:
   installation; `bazel-create-status.sh` produces the build stamps and deliberately needs nothing
   but Bash, Git and coreutils, because Bazel runs it on every build and reads its stdout as the
   stamp. `scripts/bazel/` holds the Starlark.
-- `docs/`: this file, `CONTRIBUTING.md`, `IMPLEMENTATION.md`, `ACKNOWLEDGEMENTS.md`,
-  `design/` (the per-service design documents), `docs/schema/` (generated JSON Schema) and
+- `docs/`: this file, `ARCHITECTURE.md`, `CONTRIBUTING.md`, `TODO.md`, `SECURITY.md`,
+  `CODE_OF_CONDUCT.md`, `docs/schema/` (generated JSON Schema) and
   `docs/examples/` (configuration an operator copies - **nothing here is compiled into a binary or
   installed by a service**; pivot ships no rule set at all).
 - `dist/`: release output, ignored.

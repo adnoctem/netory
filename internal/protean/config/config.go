@@ -353,8 +353,8 @@ func (c Config) IsTrustedProxy(addr netip.Addr) bool {
 	}
 
 	// An IPv4-mapped IPv6 address must be compared as IPv4, or a proxy
-	// configured as 10.0.0.0/8 would not match a connection Go reports as
-	// ::ffff:10.0.0.1.
+	// configured as 10.0.0.0/8 would not match a connection Go reports as:
+	// :ffff:10.0.0.1.
 	addr = addr.Unmap()
 
 	for _, prefix := range c.TrustedProxies {

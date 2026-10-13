@@ -17,7 +17,7 @@ const releasePrefix = "release/"
 
 // Release is one published bundle.
 //
-// A release is never modified after publishing (§2). Nothing in this file
+// A release is never modified after publishing. Nothing in this file
 // offers a way to change one: the only mutations are create and delete, and
 // create refuses an existing name. That is what makes immutability a property
 // of the code rather than a convention.
@@ -41,12 +41,12 @@ type Release struct {
 	// ManifestName is which manifest filename the bundle carried.
 	ManifestName string `json:"manifest_name"`
 
-	// Signature records the verification outcome. §8.1 requires the audit
-	// trail to carry signature status, so it is stored rather than only
+	// Signature records the verification outcome. The audit trail carries
+	// signature status, so it is stored rather than only
 	// logged.
 	Signature SignatureRecord `json:"signature"`
 
-	// TruncationChecked lists routes that passed the §6.3 check, and
+	// TruncationChecked lists routes that passed the truncation check, and
 	// TruncationSkipped those that opted out. Both are recorded because a
 	// bundle that skipped the check must stay visible afterwards.
 	TruncationChecked []string `json:"truncation_checked,omitempty"`
@@ -131,8 +131,8 @@ func NewReleases(store kv.Handle) *Releases { return &Releases{store: store} }
 
 // Create stores a new release, refusing one that already exists.
 //
-// SetIfAbsent rather than Set, and that is the whole of §4.1's "unique per
-// signpost instance" guarantee: two publishes racing on the same release name
+// SetIfAbsent rather than Set, and that is the whole of the "release
+// identifiers are unique per instance" guarantee: two publishes racing on the same release name
 // cannot both succeed, so a release name can never come to mean two different
 // sets of bytes.
 func (r *Releases) Create(ctx context.Context, release Release) error {
@@ -204,7 +204,7 @@ func (r *Releases) List(ctx context.Context) ([]Release, error) {
 		return nil, fmt.Errorf("list releases: %w", err)
 	}
 
-	// kv.Store documents Scan's order as unspecified (§9.8), so the ordering
+	// kv.Store documents Scan's order as unspecified, so the ordering
 	// is applied here rather than inherited from Badger's key order - which
 	// the Valkey implementation would not reproduce.
 	sort.Slice(releases, func(i, j int) bool {

@@ -102,7 +102,7 @@ func TestPublishWithAVerifiedSignature(t *testing.T) {
 	asrt.True(result.Release.Signature.Prehashed)
 	asrt.NotEmpty(result.Release.Signature.KeyID)
 	asrt.Equal("timestamp:1760000000\tfile:bundle.tar.gz", result.Release.Signature.TrustedComment,
-		"§8.1 wants the signature status in the audit trail, and the trusted comment is the part of it the signer chose")
+		"the audit trail carries the signature status, and the trusted comment is the part of it the signer chose")
 	asrt.Contains(result.Release.Signature.Status(), "verified")
 }
 

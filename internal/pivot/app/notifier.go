@@ -31,8 +31,8 @@ var (
 // cosmetic. protean and signpost store notifier configuration as plain JSON
 // and rely on Badger's encryption at rest; Valkey has no equivalent, so a
 // snapshot or the RDB file Valkey writes to disk would hold every SMTP
-// password and webhook URL in the clear. §8 lists notifier credentials among
-// the values pivot encrypts itself, and this is that.
+// password and webhook URL in the clear. Notifier credentials are among the
+// values pivot encrypts itself, and this is that.
 //
 // The whole configuration is sealed rather than just the fields that look like
 // credentials. Which settings are secret is the transport's knowledge, not
@@ -163,7 +163,7 @@ func (n *Notifiers) List(ctx context.Context) ([]notify.Config, error) {
 	}
 
 	// Sorted here rather than relying on Scan, which kv.Store documents as
-	// unordered - and on Valkey a SCAN genuinely has no order (§8.2).
+	// unordered - and on Valkey a SCAN genuinely has no order.
 	sort.Slice(configs, func(i, j int) bool { return configs[i].Name < configs[j].Name })
 
 	return configs, nil
