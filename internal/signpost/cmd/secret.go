@@ -56,22 +56,21 @@ func newSecretGenerateCommand() *cobra.Command {
 func newSecretRotateCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "rotate",
-		Short: "Re-key the database with a new secret (not yet implemented)",
+		Short: "Re-key the stored data with a new secret (not implemented)",
 		Args:  cobra.NoArgs,
 		RunE: func(_ *cobra.Command, _ []string) error {
 			// Deliberately not implemented rather than half-implemented.
-			// Re-keying means re-encrypting the whole database, and Badger's
-			// key-registry rotation behaviour is recorded as unverified in
-			// protean's design document (section 10.3). A rotation that
-			// half-succeeds leaves a database nothing can open, which is worse
-			// than one that has not been rotated.
+			// Re-keying means re-encrypting the whole Badger database, and how
+			// Badger's key registry behaves under re-keying is unverified. A
+			// rotation that half-succeeds leaves a database nothing can open,
+			// which is worse than one that has not been rotated.
 			//
-			// signpost is better placed than protean to survive this: the
-			// script contents live outside the database, so a rotation by hand
-			// is republishing bundles rather than reconstructing credentials.
+			// The script contents live outside the database, so rotating by
+			// hand means republishing bundles rather than reconstructing
+			// credentials.
 			return errors.New(
-				"secret rotation is not implemented yet: re-keying the database depends on Badger's key " +
-					"registry behaviour, which is recorded as unverified in docs/design/protean.md section 10.3.\n\n" +
+				"secret rotation is not implemented: re-keying the database depends on how Badger's key " +
+					"registry behaves under re-keying, which is unverified.\n\n" +
 					"To rotate by hand, with the server stopped: start with the new secret against an empty " +
 					"database and republish the bundles you need. The releases themselves are files on disk, " +
 					"so nothing is lost by doing it that way")

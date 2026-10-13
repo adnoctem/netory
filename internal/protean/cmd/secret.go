@@ -56,18 +56,17 @@ func newSecretGenerateCommand() *cobra.Command {
 func newSecretRotateCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "rotate",
-		Short: "Re-key the database with a new secret (not yet implemented)",
+		Short: "Re-key the stored data with a new secret (not implemented)",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			// Deliberately not implemented rather than half-implemented.
-			// Re-keying means re-encrypting the whole database, and Badger's
-			// key-registry rotation behaviour is recorded as unverified in
-			// protean's design document (section 10.3). A rotation that
-			// half-succeeds leaves a database nothing can open, which is worse
-			// than one that has not been rotated.
+			// Re-keying means re-encrypting the whole Badger database, and how
+			// Badger's key registry behaves under re-keying is unverified. A
+			// rotation that half-succeeds leaves a database nothing can open,
+			// which is worse than one that has not been rotated.
 			return errors.New(
-				"secret rotation is not implemented yet: re-keying the database depends on Badger's key " +
-					"registry behaviour, which is recorded as unverified in docs/design/protean.md section 10.3.\n\n" +
+				"secret rotation is not implemented: re-keying the database depends on how Badger's key " +
+					"registry behaves under re-keying, which is unverified.\n\n" +
 					"To rotate by hand, with the server stopped: export the data, start with the new secret, " +
 					"and re-import")
 		},

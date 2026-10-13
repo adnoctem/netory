@@ -56,25 +56,21 @@ func newSecretGenerateCommand() *cobra.Command {
 func newSecretRotateCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   "rotate",
-		Short: "Re-key the database with a new secret (not yet implemented)",
+		Short: "Re-key the stored data with a new secret (not implemented)",
 		Args:  cobra.NoArgs,
 		RunE: func(_ *cobra.Command, _ []string) error {
 			// Deliberately not implemented rather than half-implemented.
-			// Re-keying means re-encrypting the whole database, and Badger's
-			// key-registry rotation behaviour is recorded as unverified in
-			// protean's design document (section 10.3). A rotation that
-			// half-succeeds leaves a database nothing can open, which is worse
-			// than one that has not been rotated.
-			//
-			// pivot is better placed than protean to survive this: the
-			// script contents live outside the database, so a rotation by hand
-			// is republishing bundles rather than reconstructing credentials.
+			// Rotating means re-sealing every stored credential under keys
+			// derived from the new secret, across replicas that must all switch
+			// at once; a replica still on the old secret cannot open what a
+			// replica on the new one has written. Client records, rules and
+			// settings are not sealed and survive a rotation by hand.
 			return errors.New(
-				"secret rotation is not implemented yet: re-keying the database depends on Badger's key " +
-					"registry behaviour, which is recorded as unverified in docs/design/protean.md section 10.3.\n\n" +
-					"To rotate by hand, with the server stopped: start with the new secret against an empty " +
-					"database and republish the bundles you need. The releases themselves are files on disk, " +
-					"so nothing is lost by doing it that way")
+				"secret rotation is not implemented: every stored backend and notifier credential is sealed " +
+					"under keys derived from the current secret, and every replica must switch at once.\n\n" +
+					"To rotate by hand: stop every replica, start them all with the new secret, then re-enter " +
+					"each client's backend credentials with `pivot client backend <client-id>`, and remove and " +
+					"re-add each notifier. Client ids, client secrets, rules and settings are unaffected")
 		},
 	}
 }
